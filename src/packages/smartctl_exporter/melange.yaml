@@ -2,7 +2,7 @@ package:
   name: smartctl_exporter
   description: Export smartctl statistics to prometheus
   version: 0.14.0
-  epoch: 2
+  epoch: 3
   copyright:
     - license: Apache-2.0
   dependencies:
@@ -17,9 +17,9 @@ pipeline:
   - uses: go/bump
     with:
       deps: |-
-        golang.org/x/crypto@v0.40.0
-        golang.org/x/net@v0.42.0
-        golang.org/x/oauth2@v0.30.0
+        golang.org/x/crypto@v0.48.0
+        golang.org/x/net@v0.50.0
+        golang.org/x/oauth2@v0.35.0
   - uses: go/build
     with:
       packages: .
