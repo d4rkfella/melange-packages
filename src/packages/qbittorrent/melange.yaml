@@ -16,8 +16,8 @@ environment:
       - ca-certificates-bundle
       - apk-tools
       - bash
-    environment:
-      REPRODUCIBLE: false
+  environment:
+    REPRODUCIBLE: false
 var-transforms:
   - from: ${{package.version}}
     match: _p(\d)(\d)(\d{2})$
