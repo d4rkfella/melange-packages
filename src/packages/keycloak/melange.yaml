@@ -26,6 +26,7 @@ environment:
       - nodejs
       - openjdk-${{vars.java-version}}-default-jdk
       - pnpm
+      - npm
       - unzip
       - wolfi-base
       - wolfi-baselayout
