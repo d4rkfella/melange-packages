@@ -30,6 +30,7 @@ environment:
       - unzip
       - wolfi-base
       - wolfi-baselayout
+      - maven
   environment:
     LANG: en_US.UTF-8
     JAVA_HOME: /usr/lib/jvm/java-${{vars.java-version}}-openjdk
