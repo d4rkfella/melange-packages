@@ -127,9 +127,11 @@ subpackages:
       pipeline:
         - name: "expected initialization error test"
           runs: |
-            # This only runs in k8s but make sure it errors correctly
-            java -Djava.util.logging.manager=org.jboss.logmanager.LogManager \
-              -jar /usr/share/java/quarkus-app/quarkus-run.jar 2>&1 | grep "Couldn't retrieve the currently connected namespace"
+            set +e
+            output=$(java -Djava.util.logging.manager=org.jboss.logmanager.LogManager \
+              -jar /usr/share/java/quarkus-app/quarkus-run.jar 2>&1)
+            set -e
+            echo "$output" | grep -q "Couldn't retrieve the currently connected namespace"
   - name: ${{package.name}}-operator-compat
     pipeline:
       - name: "install files"
