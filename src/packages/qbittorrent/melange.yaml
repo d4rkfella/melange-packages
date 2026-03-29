@@ -20,7 +20,7 @@ environment:
     REPRODUCIBLE: false
 var-transforms:
   - from: ${{package.version}}
-    match: ^(\d+\.\d+\.\d+)\.(\d)(\d)(\d{2})$
+    match: ^(\d+\.\d+\.\d+)\.(\d)(\d)(\d+)$
     replace: $1_v$2.$3.$4
     to: mangled-package-version
 pipeline:
