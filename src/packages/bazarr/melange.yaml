@@ -88,7 +88,7 @@ pipeline:
       python3 -m venv --without-pip --copies "${APPDIR}/venv"
       sed -i '/lxml/ s/lxml>=4.3.0, <5.0.0/lxml>=5.0.0/' requirements.txt
 
-      "${APPDIR}/venv/bin/python" -m pip install --upgrade --no-cache-dir -r requirements.txt -r postgres-requirements.txt
+      pip install --upgrade --no-cache-dir --prefix "${APPDIR}/venv" -r requirements.txt -r postgres-requirements.txt
 
       git describe --abbrev=0 > VERSION
 
