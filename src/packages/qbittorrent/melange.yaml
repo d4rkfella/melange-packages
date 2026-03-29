@@ -70,9 +70,10 @@ pipeline:
       mv qbt-build/bin/qbittorrent-nox ${{targets.destdir}}/usr/bin/qbittorrent-nox
       chmod 755 ${{targets.destdir}}/usr/bin/qbittorrent-nox
 update:
-  version-transform:
-    - match: _v(\d)\.(\d)\.(\d+)$
-      replace: .$1$2$3
+  enabled: true
   github:
     identifier: userdocs/qbittorrent-nox-static
     strip-prefix: "release-"
+  version-transform:
+    - match: _v(\d)\.(\d)\.(\d+)$
+      replace: .$1$2$3
