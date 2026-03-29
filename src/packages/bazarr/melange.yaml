@@ -22,7 +22,6 @@ environment:
     packages:
       - python-3.14
       - py3.14-pip
-      - py3.14-virtualenv-bin
       - nodejs
       - npm
 pipeline:
@@ -86,7 +85,7 @@ pipeline:
       FILE_LIST="$(cat .github/files_to_copy)"
 
       mkdir -p "${APPDIR}"
-      virtualenv --no-pip --copies "${APPDIR}/venv"
+      python3 -m venv --without-pip --copies "${APPDIR}/venv"
       sed -i '/lxml/ s/lxml>=4.3.0, <5.0.0/lxml>=5.0.0/' requirements.txt
 
       "${APPDIR}/venv/bin/python" -m pip install --upgrade --no-cache-dir -r requirements.txt -r postgres-requirements.txt
