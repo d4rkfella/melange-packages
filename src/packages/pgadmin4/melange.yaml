@@ -1,0 +1,121 @@
+package:
+  name: pgadmin4
+  version: 9.13
+  epoch: 0
+  description: pgAdmin 4 - PostgreSQL Tools for the Web
+  copyright:
+    - license: PostgreSQL
+  dependencies:
+    runtime:
+      - python3
+      - krb5-libs
+      - libjpeg-turbo
+      - libedit
+      - openldap
+      - tzdata
+      - libpq-18
+      - postgresql-18-pgadmin-compat
+var-transforms:
+  - from: ${{package.version}}
+    match: '\.'
+    replace: "_"
+    to: mangled-package-version
+environment:
+  contents:
+    packages:
+      - build-base
+      - python3
+      - py3-pip
+      - py3-virtualenv
+      - openssl-dev
+      - libffi-dev
+      - postgresql-dev
+      - krb5-dev
+      - rust
+      - cargo
+      - zlib-dev
+      - libjpeg-turbo-dev
+      - libpng-dev
+      - nodejs
+      - npm
+      - yarn
+      - git
+      - bash
+      - autoconf
+      - automake
+      - libtool
+      - nasm
+      - g++
+
+pipeline:
+  - uses: git-checkout
+    with:
+      repository: https://github.com/pgadmin-org/pgadmin4
+      tag: REL-${{vars.mangled-package-version}}
+      expected-commit: "5b231ddd3f7aca5d6e7c03c21e7e1bc94b8c3b03"
+
+  - name: build-js
+    runs: |
+      cd web
+      export CPPFLAGS="-DPNG_ARM_NEON_OPT=0"
+      npm install -g corepack
+      corepack enable
+      yarn set version berry
+      yarn set version 4
+      yarn install
+      yarn run bundle
+      rm -rf yarn.lock package.json .yarn babel.cfg webpack.* jest.config.js babel.*
+
+  - name: build-venv
+    runs: |
+      python3 -m venv --system-site-packages --without-pip /work/venv
+      /work/venv/bin/python3 -m pip install --no-cache-dir -r requirements.txt
+      /work/venv/bin/python3 -m pip install --no-cache-dir gunicorn==23.0.0
+
+  - name: install
+    runs: |
+      # App files
+      mkdir -p "${{targets.destdir}}/usr/share/pgadmin4"
+      cp -r web/. "${{targets.destdir}}/usr/share/pgadmin4/"
+
+      # Python venv
+      mkdir -p "${{targets.destdir}}/usr/lib/pgadmin4"
+      cp -r /work/venv "${{targets.destdir}}/usr/lib/pgadmin4/venv"
+
+      # Runtime scripts (these are app-level, not user-facing binaries)
+      cp pkg/docker/run_pgadmin.py pkg/docker/gunicorn_config.py \
+         "${{targets.destdir}}/usr/share/pgadmin4/"
+
+      # Entrypoint as a proper executable in /usr/bin
+      mkdir -p "${{targets.destdir}}/usr/bin"
+      cp pkg/docker/entrypoint.sh "${{targets.destdir}}/usr/bin/pgadmin4-entrypoint"
+      chmod +x "${{targets.destdir}}/usr/bin/pgadmin4-entrypoint"
+
+      # Required by pgadmin4 at startup — must exist even if empty
+      touch "${{targets.destdir}}/usr/share/pgadmin4/config_distro.py"
+
+      cp LICENSE "${{targets.destdir}}/usr/share/pgadmin4/LICENSE"
+
+      # State directories
+      mkdir -p "${{targets.destdir}}/var/lib/pgadmin"
+      mkdir -p "${{targets.destdir}}/run/pgadmin"
+
+      find "${{targets.destdir}}" -type d -name '__pycache__' -exec rm -rf {} + || true
+
+update:
+  enabled: true
+  github:
+    identifier: pgadmin-org/pgadmin4
+    strip-prefix: REL-
+    tag-filter: REL-
+    use-tag: true
+
+test:
+  pipeline:
+    - name: Check pgadmin4 files are present
+      runs: |
+        test -f /usr/share/pgadmin4/run_pgadmin.py
+        test -f /usr/share/pgadmin4/gunicorn_config.py
+        test -f /usr/share/pgadmin4/config_distro.py
+        test -x /usr/bin/pgadmin4-entrypoint
+        test -f /usr/lib/pgadmin4/venv/bin/gunicorn
