@@ -78,7 +78,7 @@ pipeline:
       APPDIR="${{targets.destdir}}/usr/lib/bazarr/app"
       mkdir -p "${APPDIR}"
 
-      uv venv --copies "${APPDIR}/venv"
+      uv venv --relocatable "${APPDIR}/venv"
 
       sed -i '/lxml/ s/lxml>=4.3.0, <5.0.0/lxml>=5.0.0/' requirements.txt
       sed -i 's/ --only-binary=Pillow//' requirements.txt
