@@ -34,7 +34,7 @@ environment:
   contents:
     packages:
       - build-base
-      - python-${{vars.py-version}}
+      - python-${{vars.py-version}}-dev
       - py${{vars.py-version}}-pip
       - py${{vars.py-version}}-virtualenv
       - py${{vars.py-version}}-bcrypt
@@ -51,7 +51,6 @@ environment:
       - libpng-dev
       - nodejs
       - npm
-      - yarn
       - git
       - bash
       - autoconf
@@ -117,11 +116,13 @@ pipeline:
 
 update:
   enabled: true
-  version-separator: _
+  version-transform:
+    - match: _(\d+)$
+      replace: .${1}
   github:
     identifier: pgadmin-org/pgadmin4
     strip-prefix: REL-
-    tag-filter: REL-\d
+    tag-filter-prefix: REL-
     use-tag: true
 
 test:
