@@ -15,11 +15,20 @@ package:
       - tzdata
       - libpq-18
       - postgresql-18-pgadmin-compat
+      - py3-bcrypt
+      - py3-cryptography
+      - py3-gssapi
+      - py3-ldap3
+      - py3-paramiko
+      - py3-psutil
+      - py3-psycopg-18
+
 var-transforms:
   - from: ${{package.version}}
     match: '\.'
     replace: "_"
     to: mangled-package-version
+
 environment:
   contents:
     packages:
@@ -27,12 +36,15 @@ environment:
       - python3
       - py3-pip
       - py3-virtualenv
+      - py3-bcrypt
+      - py3-cryptography
+      - py3-ldap3
+      - py3-paramiko
+      - py3-psutil
+      - py3-psycopg-18
       - openssl-dev
       - libffi-dev
-      - postgresql-dev
       - krb5-dev
-      - rust
-      - cargo
       - zlib-dev
       - libjpeg-turbo-dev
       - libpng-dev
@@ -82,7 +94,7 @@ pipeline:
       mkdir -p "${{targets.destdir}}/usr/lib/pgadmin4"
       cp -r /work/venv "${{targets.destdir}}/usr/lib/pgadmin4/venv"
 
-      # Runtime scripts (these are app-level, not user-facing binaries)
+      # Runtime scripts (app-level, not user-facing binaries)
       cp pkg/docker/run_pgadmin.py pkg/docker/gunicorn_config.py \
          "${{targets.destdir}}/usr/share/pgadmin4/"
 
@@ -104,10 +116,11 @@ pipeline:
 
 update:
   enabled: true
+  version-separator: _
   github:
     identifier: pgadmin-org/pgadmin4
     strip-prefix: REL-
-    tag-filter: REL-
+    tag-filter: REL-\d
     use-tag: true
 
 test:
