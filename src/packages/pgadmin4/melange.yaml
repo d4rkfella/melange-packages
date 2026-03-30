@@ -1,7 +1,7 @@
 package:
   name: pgadmin4
   version: 9.13
-  epoch: 2
+  epoch: 3
   description: pgAdmin 4 - PostgreSQL Tools for the Web
   copyright:
     - license: PostgreSQL
@@ -46,9 +46,9 @@ pipeline:
       expected-commit: "5b231ddd3f7aca5d6e7c03c21e7e1bc94b8c3b03"
   - name: build-venv
     runs: |
-      python${{vars.py-version}} -m venv --system-site-packages --without-pip --copies /work/venv
-      pip install --no-cache-dir --prefix=/work/venv -r requirements.txt
-      pip install --no-cache-dir --prefix=/work/venv gunicorn==23.0.0
+      python${{vars.py-version}} -m venv --system-site-packages --without-pip --copies venv
+      pip install --no-cache-dir --prefix=venv -r requirements.txt
+      pip install --no-cache-dir --prefix=venv gunicorn==23.0.0
   - name: build-js
     runs: |
       cd web
@@ -64,15 +64,13 @@ pipeline:
       rm -rf node_modules yarn.lock package.json .yarn babel.cfg webpack.* jest.config.js babel.*
   - name: install
     runs: |
-      mkdir -p "${{targets.destdir}}/usr/share/pgadmin4"
       mkdir -p "${{targets.destdir}}/usr/lib/pgadmin4"
       
-      cp -r /work/venv "${{targets.destdir}}/usr/lib/pgadmin4/venv"
-      cp -r web/. "${{targets.destdir}}/usr/share/pgadmin4/"
+      cp -r venv "${{targets.destdir}}/usr/lib/pgadmin4/venv"
+      cp -r web/. "${{targets.destdir}}/usr/lib/pgadmin4/"
       
-      cp pkg/docker/run_pgadmin.py "${{targets.destdir}}/usr/share/pgadmin4/"
-      cp pkg/docker/gunicorn_config.py "${{targets.destdir}}/usr/share/pgadmin4/"
-      cp LICENSE "${{targets.destdir}}/usr/share/pgadmin4/LICENSE"
+      cp pkg/docker/run_pgadmin.py "${{targets.destdir}}/usr/lib/pgadmin4/"
+      cp LICENSE "${{targets.destdir}}/usr/lib/pgadmin4/LICENSE"
 
       find "${{targets.destdir}}" -type d -name '__pycache__' -exec rm -rf {} + || true
 
