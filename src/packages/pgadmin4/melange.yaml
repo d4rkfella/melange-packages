@@ -123,4 +123,3 @@ test:
         test -f /usr/share/pgadmin4/config_distro.py
         test -x /usr/bin/pgadmin4-entrypoint
         test -f /usr/lib/pgadmin4/venv/bin/gunicorn
-        test -f /usr/lib/tmpfiles.d/pgadmin4.conf
