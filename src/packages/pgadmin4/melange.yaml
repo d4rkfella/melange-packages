@@ -69,33 +69,37 @@ pipeline:
       mkdir -p "${{targets.destdir}}/usr/share/pgadmin4"
       cp -r web/. "${{targets.destdir}}/usr/share/pgadmin4/"
 
-      # Python venv
       mkdir -p "${{targets.destdir}}/usr/lib/pgadmin4"
       cp -r /work/venv "${{targets.destdir}}/usr/lib/pgadmin4/venv"
 
-      # Runtime scripts (app-level, not user-facing binaries)
       cp pkg/docker/run_pgadmin.py pkg/docker/gunicorn_config.py \
          "${{targets.destdir}}/usr/share/pgadmin4/"
 
-      # Entrypoint as a proper executable in /usr/bin
       mkdir -p "${{targets.destdir}}/usr/bin"
       cp pkg/docker/entrypoint.sh "${{targets.destdir}}/usr/bin/pgadmin4-entrypoint"
       chmod +x "${{targets.destdir}}/usr/bin/pgadmin4-entrypoint"
 
-      # Required by pgadmin4 at startup — must exist even if empty
       touch "${{targets.destdir}}/usr/share/pgadmin4/config_distro.py"
 
       cp LICENSE "${{targets.destdir}}/usr/share/pgadmin4/LICENSE"
 
-      # /var/lib/pgadmin is a persistent data directory
-      mkdir -p "${{targets.destdir}}/var/lib/pgadmin"
-
-      # /run/pgadmin is a tmpdir — use tmpfiles.d instead of creating it here
-      mkdir -p "${{targets.destdir}}/usr/lib/tmpfiles.d"
-      echo "d /run/pgadmin 0755 pgadmin root -" > \
-        "${{targets.destdir}}/usr/lib/tmpfiles.d/pgadmin4.conf"
+      mkdir -p "${{targets.destdir}}/var/lib/pgadmin" 
 
       find "${{targets.destdir}}" -type d -name '__pycache__' -exec rm -rf {} + || true
+subpackages:
+  - name: ${{package.name}}-compat
+    pipeline:
+      - runs: |
+          mkdir -p "${{targets.subpkgdir}}/pgadmin4" "${{targets.subpkgdir}}/venv"
+          ln -sf /usr/lib/pgadmin4/venv "${{targets.subpkgdir}}/venv"
+          ln -sf /usr/share/pgadmin4/pgadmin "${{targets.subpkgdir}}/pgadmin4/pgadmin"
+          ln -sf /usr/share/pgadmin4/run_pgadmin.py "${{targets.subpkgdir}}/pgadmin4/run_pgadmin.py"
+          ln -sf /usr/share/pgadmin4/setup.py "${{targets.subpkgdir}}/pgadmin4/setup.py"
+          ln -sf /usr/share/pgadmin4/gunicorn_config.py "${{targets.subpkgdir}}/pgadmin4/gunicorn_config.py"
+          ln -sf /usr/share/pgadmin4/config_distro.py "${{targets.subpkgdir}}/pgadmin4/config_distro.py"
+    dependencies:
+      runtime:
+        - ${{package.name}}=${{package.version}}
 update:
   enabled: true
   version-transform:
