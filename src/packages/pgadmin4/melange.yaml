@@ -5,10 +5,6 @@ package:
   description: pgAdmin 4 - PostgreSQL Tools for the Web
   copyright:
     - license: PostgreSQL
-  checks:
-    disabled:
-      - nonlinux
-      - unsupportedarch
   dependencies:
     runtime:
       - py${{vars.py-version}}-bcrypt
@@ -16,16 +12,13 @@ package:
       - py${{vars.py-version}}-ldap3
       - py${{vars.py-version}}-paramiko
       - py${{vars.py-version}}-psutil
-
 vars:
   py-version: "3.13"
-
 var-transforms:
   - from: ${{package.version}}
     match: '\.'
     replace: "_"
     to: mangled-package-version
-
 environment:
   environment:
     PYTHONHASHSEED: 0
@@ -46,20 +39,17 @@ environment:
       - corepack
       - krb5-dev
       - bash
-
 pipeline:
   - uses: git-checkout
     with:
       repository: https://github.com/pgadmin-org/pgadmin4
       tag: REL-${{vars.mangled-package-version}}
       expected-commit: "5b231ddd3f7aca5d6e7c03c21e7e1bc94b8c3b03"
-
   - name: build-venv
     runs: |
       python${{vars.py-version}} -m venv --system-site-packages --without-pip --copies /work/venv
       pip install --no-cache-dir --prefix=/work/venv -r requirements.txt
       pip install --no-cache-dir --prefix=/work/venv gunicorn==23.0.0
-
   - name: build-js
     runs: |
       cd web
@@ -69,9 +59,10 @@ pipeline:
       yarn set version 4
       yarn install
       yarn run bundle
-      # Remove build-only files and node_modules
+      find pgadmin/static/js/generated/fonts -name '*..ttf' -o -name '*..woff2' | while read f; do
+        mv "$f" "$(echo "$f" | sed 's/\.\./\./')"
+      done
       rm -rf node_modules yarn.lock package.json .yarn babel.cfg webpack.* jest.config.js babel.*
-
   - name: install
     runs: |
       # App files
@@ -105,7 +96,6 @@ pipeline:
         "${{targets.destdir}}/usr/lib/tmpfiles.d/pgadmin4.conf"
 
       find "${{targets.destdir}}" -type d -name '__pycache__' -exec rm -rf {} + || true
-
 update:
   enabled: true
   version-transform:
@@ -116,9 +106,12 @@ update:
     strip-prefix: REL-
     tag-filter-prefix: REL-
     use-tag: true
-
 test:
   pipeline:
+    - name: Check for missing dependancies
+      uses: test/tw/ldd-check
+      with:
+        packages: ${{package.name}}
     - name: Check pgadmin4 files are present
       runs: |
         test -f /usr/share/pgadmin4/run_pgadmin.py
