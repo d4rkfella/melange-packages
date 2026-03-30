@@ -1,7 +1,7 @@
 package:
   name: pgadmin4
   version: 9.13
-  epoch: 3
+  epoch: 4
   description: pgAdmin 4 - PostgreSQL Tools for the Web
   copyright:
     - license: PostgreSQL
@@ -47,8 +47,8 @@ pipeline:
   - name: build-venv
     runs: |
       python${{vars.py-version}} -m venv --system-site-packages --without-pip --copies venv
-      pip install --no-cache-dir --prefix=venv -r requirements.txt
-      pip install --no-cache-dir --prefix=venv gunicorn==23.0.0
+      pip install --no-cache-dir --python=venv/bin/python3.13 --prefix=venv -r requirements.txt
+      pip install --no-cache-dir --python=venv/bin/python3.13 --prefix=venv gunicorn==23.0.0
   - name: build-js
     runs: |
       cd web
