@@ -57,7 +57,7 @@ environment:
       - automake
       - libtool
       - nasm
-      - g++
+      - gcc
 
 pipeline:
   - uses: git-checkout
