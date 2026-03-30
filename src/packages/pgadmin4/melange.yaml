@@ -20,7 +20,6 @@ package:
       - py${{vars.py-version}}-ldap3
       - py${{vars.py-version}}-paramiko
       - py${{vars.py-version}}-psutil
-      - py${{vars.py-version}}-psycopg-18
 
 vars:
   py-version: "3.13"
@@ -43,7 +42,7 @@ environment:
       - py${{vars.py-version}}-ldap3
       - py${{vars.py-version}}-paramiko
       - py${{vars.py-version}}-psutil
-      - py${{vars.py-version}}-psycopg-18
+      - postgresql-18-dev
       - openssl-dev
       - libffi-dev
       - krb5-dev
