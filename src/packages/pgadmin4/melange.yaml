@@ -11,14 +11,11 @@ package:
       - unsupportedarch
   dependencies:
     runtime:
-      - libpq-18
-      - postgresql-18-pgadmin-compat
       - py${{vars.py-version}}-bcrypt
       - py${{vars.py-version}}-cryptography
       - py${{vars.py-version}}-ldap3
       - py${{vars.py-version}}-paramiko
       - py${{vars.py-version}}-psutil
-      - py${{vars.py-version}}-psycopg-18
 
 vars:
   py-version: "3.13"
@@ -33,18 +30,17 @@ environment:
   environment:
     PYTHONHASHSEED: 0
     PYTHONDONTWRITEBYTECODE: 1
+    REPRODUCIBLE: false
   contents:
     packages:
       - build-base
       - python-${{vars.py-version}}-dev
       - py${{vars.py-version}}-pip
-      - py${{vars.py-version}}-virtualenv
       - py${{vars.py-version}}-bcrypt
       - py${{vars.py-version}}-cryptography
       - py${{vars.py-version}}-ldap3
       - py${{vars.py-version}}-paramiko
       - py${{vars.py-version}}-psutil
-      - py${{vars.py-version}}-psycopg-18
       - postgresql-18-dev
       - nodejs
       - corepack
