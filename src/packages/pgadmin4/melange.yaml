@@ -36,7 +36,6 @@ environment:
   contents:
     packages:
       - build-base
-      - gcc
       - python-${{vars.py-version}}-dev
       - py${{vars.py-version}}-pip
       - py${{vars.py-version}}-virtualenv
@@ -48,8 +47,8 @@ environment:
       - py${{vars.py-version}}-psycopg-18
       - postgresql-18-dev
       - nodejs
-      - npm
-      - git
+      - corepack
+      - krb5-dev
       - bash
 
 pipeline:
@@ -69,7 +68,6 @@ pipeline:
     runs: |
       cd web
       export CPPFLAGS="-DPNG_ARM_NEON_OPT=0"
-      npm install -g corepack
       corepack enable
       yarn set version berry
       yarn set version 4
