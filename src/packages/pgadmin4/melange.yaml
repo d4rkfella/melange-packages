@@ -11,7 +11,7 @@ package:
       - py${{vars.py-version}}-cryptography
       - py${{vars.py-version}}-ldap3
       - py${{vars.py-version}}-psutil
-      - postgresql-18--pgadmin-compat
+      - postgresql-18-pgadmin-compat
 vars:
   py-version: "3.13"
 var-transforms:
