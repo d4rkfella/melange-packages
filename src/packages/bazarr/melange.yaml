@@ -1,7 +1,7 @@
 package:
   name: bazarr
   version: "1.5.7_beta11"
-  epoch: 2
+  epoch: 0
   description: Bazarr is a companion application to Sonarr and Radarr. It manages and downloads subtitles based on your requirements. You define your preferences by TV show or movie and Bazarr takes care of everything for you.
   copyright:
     - license: GPL-3.0-only
@@ -21,7 +21,7 @@ environment:
   contents:
     packages:
       - python-3.13
-      - uv
+      - py3.13-pip
       - nodejs
       - npm
 pipeline:
@@ -42,21 +42,24 @@ pipeline:
   - name: Update vendored dependencies
     runs: |
       set -euo pipefail
+
       DEST_DIR="/tmp"
       LIBS_DIR="libs"
-      uv pip install --no-cache --system pip
+
       echo "Updating vendored dependencies..."
       for entry in \
         "requests-2.32.5.dist-info requests==2.33.0"
       do
           OLD_DIST=$(printf '%s' "$entry" | cut -d' ' -f1)
           NEW_SPEC=$(printf '%s' "$entry" | cut -d' ' -f2)
+
           PACKAGE_NAME=$(printf '%s' "$NEW_SPEC" | cut -d= -f1)
           VERSION=$(printf '%s' "$NEW_SPEC" | cut -d= -f3)
+
           if [ -d "$LIBS_DIR/$OLD_DIST" ]; then
               echo "Updating $PACKAGE_NAME to version $VERSION..."
               rm -rf "$LIBS_DIR/$OLD_DIST"
-              pip download --no-deps --dest "$DEST_DIR" "$NEW_SPEC"
+              pip download --no-deps --dest="$DEST_DIR" "$NEW_SPEC"
               python3 -m zipfile -e "$DEST_DIR/${PACKAGE_NAME}-${VERSION}-py3-none-any.whl" "$LIBS_DIR/"
           else
               echo "Warning: $LIBS_DIR/$OLD_DIST not found, skipping"
@@ -65,40 +68,39 @@ pipeline:
   - name: Fix SSL verification
     runs: |
       set -euo pipefail
+
       if ! head -n 15 "libs/urllib3/connectionpool.py" | grep -q "import ssl"; then
         sed -i '/from __future__ import annotations/a import ssl' "libs/urllib3/connectionpool.py"
         echo "'ssl package import' has been added to the top of the file."
       else
         echo "'ssl package is already imported."
       fi
+
       sed -i 's/cert_reqs=self\.cert_reqs/cert_reqs=ssl.CERT_REQUIRED/' "libs/urllib3/connectionpool.py"
   - name: Prepare package
     runs: |
       set -euo pipefail
+
       APPDIR="${{targets.destdir}}/usr/lib/bazarr/app"
+      FILE_LIST="$(cat .github/files_to_copy)"
+
       mkdir -p "${APPDIR}"
-
-      uv venv --relocatable "${APPDIR}/venv"
-
+      python3 -m venv --without-pip --copies "${APPDIR}/venv"
       sed -i '/lxml/ s/lxml>=4.3.0, <5.0.0/lxml>=5.0.0/' requirements.txt
-      sed -i 's/ --only-binary=Pillow//' requirements.txt
-      uv pip install \
-        --python "${APPDIR}/venv" \
-        --no-cache \
-        --only-binary Pillow \
-        -r requirements.txt \
-        -r postgres-requirements.txt
-      chmod 444 "${APPDIR}/venv/.lock"
-      
+
+      pip install --upgrade --no-cache-dir --prefix "${APPDIR}/venv" -r requirements.txt -r postgres-requirements.txt
+
       git describe --abbrev=0 > VERSION
-      
-      while IFS= read -r f; do
-          echo "**** copying $f to target destdir ****"
+
+      while IFS= read -r f
+      do
+          echo "**** copying $f to release ****"
           cp -r --parents "$f" "$APPDIR"
       done < .github/files_to_copy
+
       cp VERSION "${APPDIR}"
-      printf "UpdateMethod=docker\nBranch=development\nPackageVersion=${{package.version}}\nPackageAuthor=d4rkfella" \
-        > "${{targets.destdir}}/usr/lib/bazarr/package_info"
+
+      printf "UpdateMethod=docker\nBranch=development\nPackageVersion=${{package.version}}\nPackageAuthor=d4rkfella" > ${{targets.destdir}}/usr/lib/bazarr/package_info
 test:
   environment:
     contents:
