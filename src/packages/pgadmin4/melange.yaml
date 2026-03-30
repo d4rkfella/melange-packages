@@ -5,14 +5,13 @@ package:
   description: pgAdmin 4 - PostgreSQL Tools for the Web
   copyright:
     - license: PostgreSQL
+  checks:
+    disabled:
+      - nonlinux
+      - unsupportedarch
   dependencies:
     runtime:
-      - python-${{vars.py-version}}
       - krb5-libs
-      - libjpeg-turbo
-      - libedit
-      - openldap
-      - tzdata
       - libpq-18
       - postgresql-18-pgadmin-compat
       - py${{vars.py-version}}-bcrypt
@@ -20,6 +19,7 @@ package:
       - py${{vars.py-version}}-ldap3
       - py${{vars.py-version}}-paramiko
       - py${{vars.py-version}}-psutil
+      - py${{vars.py-version}}-psycopg-18
 
 vars:
   py-version: "3.13"
@@ -34,6 +34,7 @@ environment:
   contents:
     packages:
       - build-base
+      - gcc
       - python-${{vars.py-version}}-dev
       - py${{vars.py-version}}-pip
       - py${{vars.py-version}}-virtualenv
@@ -42,22 +43,13 @@ environment:
       - py${{vars.py-version}}-ldap3
       - py${{vars.py-version}}-paramiko
       - py${{vars.py-version}}-psutil
+      - py${{vars.py-version}}-psycopg-18
       - postgresql-18-dev
-      - openssl-dev
-      - libffi-dev
       - krb5-dev
-      - zlib-dev
-      - libjpeg-turbo-dev
-      - libpng-dev
       - nodejs
       - npm
       - git
       - bash
-      - autoconf
-      - automake
-      - libtool
-      - nasm
-      - gcc
 
 pipeline:
   - uses: git-checkout
@@ -65,6 +57,12 @@ pipeline:
       repository: https://github.com/pgadmin-org/pgadmin4
       tag: REL-${{vars.mangled-package-version}}
       expected-commit: "5b231ddd3f7aca5d6e7c03c21e7e1bc94b8c3b03"
+
+  - name: build-venv
+    runs: |
+      python${{vars.py-version}} -m venv --system-site-packages --without-pip --copies /work/venv
+      pip install --no-cache-dir --prefix=/work/venv -r requirements.txt
+      pip install --no-cache-dir --prefix=/work/venv gunicorn==23.0.0
 
   - name: build-js
     runs: |
@@ -76,13 +74,8 @@ pipeline:
       yarn set version 4
       yarn install
       yarn run bundle
-      rm -rf yarn.lock package.json .yarn babel.cfg webpack.* jest.config.js babel.*
-
-  - name: build-venv
-    runs: |
-      python${{vars.py-version}} -m venv --system-site-packages --without-pip /work/venv
-      pip install --no-cache-dir --prefix=/work/venv -r requirements.txt
-      pip install --no-cache-dir --prefix=/work/venv gunicorn==23.0.0
+      # Remove build-only files and node_modules
+      rm -rf node_modules yarn.lock package.json .yarn babel.cfg webpack.* jest.config.js babel.*
 
   - name: install
     runs: |
@@ -108,9 +101,13 @@ pipeline:
 
       cp LICENSE "${{targets.destdir}}/usr/share/pgadmin4/LICENSE"
 
-      # State directories
+      # /var/lib/pgadmin is a persistent data directory
       mkdir -p "${{targets.destdir}}/var/lib/pgadmin"
-      mkdir -p "${{targets.destdir}}/run/pgadmin"
+
+      # /run/pgadmin is a tmpdir — use tmpfiles.d instead of creating it here
+      mkdir -p "${{targets.destdir}}/usr/lib/tmpfiles.d"
+      echo "d /run/pgadmin 0755 pgadmin root -" > \
+        "${{targets.destdir}}/usr/lib/tmpfiles.d/pgadmin4.conf"
 
       find "${{targets.destdir}}" -type d -name '__pycache__' -exec rm -rf {} + || true
 
@@ -134,3 +131,4 @@ test:
         test -f /usr/share/pgadmin4/config_distro.py
         test -x /usr/bin/pgadmin4-entrypoint
         test -f /usr/lib/pgadmin4/venv/bin/gunicorn
+        test -f /usr/lib/tmpfiles.d/pgadmin4.conf
