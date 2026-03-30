@@ -65,41 +65,17 @@ pipeline:
       rm -rf node_modules yarn.lock package.json .yarn babel.cfg webpack.* jest.config.js babel.*
   - name: install
     runs: |
-      # App files
       mkdir -p "${{targets.destdir}}/usr/share/pgadmin4"
-      cp -r web/. "${{targets.destdir}}/usr/share/pgadmin4/"
-
       mkdir -p "${{targets.destdir}}/usr/lib/pgadmin4"
+      
       cp -r /work/venv "${{targets.destdir}}/usr/lib/pgadmin4/venv"
-
-      cp pkg/docker/run_pgadmin.py pkg/docker/gunicorn_config.py \
-         "${{targets.destdir}}/usr/share/pgadmin4/"
-
-      mkdir -p "${{targets.destdir}}/usr/bin"
-      cp pkg/docker/entrypoint.sh "${{targets.destdir}}/usr/bin/pgadmin4-entrypoint"
-      chmod +x "${{targets.destdir}}/usr/bin/pgadmin4-entrypoint"
-
-      touch "${{targets.destdir}}/usr/share/pgadmin4/config_distro.py"
-
+      cp -r web/. "${{targets.destdir}}/usr/share/pgadmin4/"
+      
+      cp pkg/docker/run_pgadmin.py "${{targets.destdir}}/usr/share/pgadmin4/"
       cp LICENSE "${{targets.destdir}}/usr/share/pgadmin4/LICENSE"
 
-      mkdir -p "${{targets.destdir}}/var/lib/pgadmin" 
-
       find "${{targets.destdir}}" -type d -name '__pycache__' -exec rm -rf {} + || true
-subpackages:
-  - name: ${{package.name}}-compat
-    pipeline:
-      - runs: |
-          mkdir -p "${{targets.subpkgdir}}/pgadmin4" "${{targets.subpkgdir}}/venv"
-          ln -sf /usr/lib/pgadmin4/venv "${{targets.subpkgdir}}/venv"
-          ln -sf /usr/share/pgadmin4/pgadmin "${{targets.subpkgdir}}/pgadmin4/pgadmin"
-          ln -sf /usr/share/pgadmin4/run_pgadmin.py "${{targets.subpkgdir}}/pgadmin4/run_pgadmin.py"
-          ln -sf /usr/share/pgadmin4/setup.py "${{targets.subpkgdir}}/pgadmin4/setup.py"
-          ln -sf /usr/share/pgadmin4/gunicorn_config.py "${{targets.subpkgdir}}/pgadmin4/gunicorn_config.py"
-          ln -sf /usr/share/pgadmin4/config_distro.py "${{targets.subpkgdir}}/pgadmin4/config_distro.py"
-    dependencies:
-      runtime:
-        - ${{package.name}}=${{package.version}}
+
 update:
   enabled: true
   version-transform:
@@ -116,10 +92,3 @@ test:
       uses: test/tw/ldd-check
       with:
         packages: ${{package.name}}
-    - name: Check pgadmin4 files are present
-      runs: |
-        test -f /usr/share/pgadmin4/run_pgadmin.py
-        test -f /usr/share/pgadmin4/gunicorn_config.py
-        test -f /usr/share/pgadmin4/config_distro.py
-        test -x /usr/bin/pgadmin4-entrypoint
-        test -f /usr/lib/pgadmin4/venv/bin/gunicorn
