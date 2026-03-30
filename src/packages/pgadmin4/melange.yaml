@@ -47,8 +47,8 @@ pipeline:
   - name: build-venv
     runs: |
       python${{vars.py-version}} -m venv --system-site-packages --without-pip --copies venv
-      pip install --no-cache-dir --python=venv/bin/python3.13 --prefix=venv -r requirements.txt
-      pip install --no-cache-dir --python=venv/bin/python3.13 --prefix=venv gunicorn==23.0.0
+      pip --python=venv/bin/python3.13 install --no-cache-dir --prefix=venv -r requirements.txt
+      pip --python=venv/bin/python3.13 install --no-cache-dir --prefix=venv gunicorn==23.0.0
   - name: build-js
     runs: |
       cd web
