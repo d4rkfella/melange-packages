@@ -1,7 +1,7 @@
 package:
   name: bazarr
   version: "1.5.7_beta11"
-  epoch: 1
+  epoch: 2
   description: Bazarr is a companion application to Sonarr and Radarr. It manages and downloads subtitles based on your requirements. You define your preferences by TV show or movie and Bazarr takes care of everything for you.
   copyright:
     - license: GPL-3.0-only
@@ -78,7 +78,7 @@ pipeline:
       APPDIR="${{targets.destdir}}/usr/lib/bazarr/app"
       mkdir -p "${APPDIR}"
 
-      uv venv --python python3.13 --no-seed "${APPDIR}/venv"
+      uv venv --copies "${APPDIR}/venv"
 
       sed -i '/lxml/ s/lxml>=4.3.0, <5.0.0/lxml>=5.0.0/' requirements.txt
       sed -i 's/ --only-binary=Pillow//' requirements.txt
