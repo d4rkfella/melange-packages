@@ -7,7 +7,7 @@ package:
     - license: PostgreSQL
   dependencies:
     runtime:
-      - python3
+      - python-${{vars.py-version}}
       - krb5-libs
       - libjpeg-turbo
       - libedit
@@ -15,13 +15,15 @@ package:
       - tzdata
       - libpq-18
       - postgresql-18-pgadmin-compat
-      - py3-bcrypt
-      - py3-cryptography
-      - py3-gssapi
-      - py3-ldap3
-      - py3-paramiko
-      - py3-psutil
-      - py3-psycopg-18
+      - py${{vars.py-version}}-bcrypt
+      - py${{vars.py-version}}-cryptography
+      - py${{vars.py-version}}-ldap3
+      - py${{vars.py-version}}-paramiko
+      - py${{vars.py-version}}-psutil
+      - py${{vars.py-version}}-psycopg-18
+
+vars:
+  py-version: "3.13"
 
 var-transforms:
   - from: ${{package.version}}
@@ -33,15 +35,15 @@ environment:
   contents:
     packages:
       - build-base
-      - python3
-      - py3-pip
-      - py3-virtualenv
-      - py3-bcrypt
-      - py3-cryptography
-      - py3-ldap3
-      - py3-paramiko
-      - py3-psutil
-      - py3-psycopg-18
+      - python-${{vars.py-version}}
+      - py${{vars.py-version}}-pip
+      - py${{vars.py-version}}-virtualenv
+      - py${{vars.py-version}}-bcrypt
+      - py${{vars.py-version}}-cryptography
+      - py${{vars.py-version}}-ldap3
+      - py${{vars.py-version}}-paramiko
+      - py${{vars.py-version}}-psutil
+      - py${{vars.py-version}}-psycopg-18
       - openssl-dev
       - libffi-dev
       - krb5-dev
@@ -80,9 +82,9 @@ pipeline:
 
   - name: build-venv
     runs: |
-      python3 -m venv --system-site-packages --without-pip /work/venv
-      /work/venv/bin/python3 -m pip install --no-cache-dir -r requirements.txt
-      /work/venv/bin/python3 -m pip install --no-cache-dir gunicorn==23.0.0
+      python${{vars.py-version}} -m venv --system-site-packages --without-pip /work/venv
+      pip install --no-cache-dir --prefix=/work/venv -r requirements.txt
+      pip install --no-cache-dir --prefix=/work/venv gunicorn==23.0.0
 
   - name: install
     runs: |
