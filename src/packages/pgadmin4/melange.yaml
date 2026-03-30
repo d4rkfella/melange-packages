@@ -11,7 +11,6 @@ package:
       - unsupportedarch
   dependencies:
     runtime:
-      - krb5-libs
       - libpq-18
       - postgresql-18-pgadmin-compat
       - py${{vars.py-version}}-bcrypt
@@ -31,6 +30,9 @@ var-transforms:
     to: mangled-package-version
 
 environment:
+  environment:
+    PYTHONHASHSEED: 0
+    PYTHONDONTWRITEBYTECODE: 1
   contents:
     packages:
       - build-base
@@ -45,7 +47,6 @@ environment:
       - py${{vars.py-version}}-psutil
       - py${{vars.py-version}}-psycopg-18
       - postgresql-18-dev
-      - krb5-dev
       - nodejs
       - npm
       - git
