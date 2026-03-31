@@ -1,7 +1,7 @@
 package:
   name: pgadmin4
   version: 9.13
-  epoch: 6
+  epoch: 7
   description: pgAdmin 4 - PostgreSQL Tools for the Web
   copyright:
     - license: PostgreSQL
@@ -48,8 +48,8 @@ pipeline:
     runs: |
       mkdir -p ${{targets.destdir}}/usr/lib/pgadmin4
       python${{vars.py-version}} -m venv --system-site-packages --without-pip --copies ${{targets.destdir}}/usr/lib/pgadmin4/venv
-      pip install --no-cache-dir --prefix=${{targets.destdir}}/usr/lib/pgadmin4/venv -r requirements.txt
-      pip install --no-cache-dir --prefix=${{targets.destdir}}/usr/lib/pgadmin4/venv gunicorn==25.3.0
+      ${{targets.destdir}}/usr/lib/pgadmin4/venv/bin/python3 -m pip install --no-cache-dir -r requirements.txt
+      ${{targets.destdir}}/usr/lib/pgadmin4/venv/bin/python3 -m pip install --no-cache-dir gunicorn==25.3.0
   - name: build-js
     runs: |
       cd web
@@ -59,10 +59,7 @@ pipeline:
       yarn set version 4
       yarn install
       yarn run bundle
-      find pgadmin/static/js/generated/fonts -name '*..ttf' -o -name '*..woff2' | while read f; do
-        mv "$f" "$(echo "$f" | sed 's/\.\./\./')"
-      done
-      rm -rf node_modules yarn.lock package.json .yarn babel.cfg webpack.* jest.config.js babel.*
+      rm -rf yarn.lock package.json .[^.]* babel.cfg webpack.* jest.config.js babel.*
   - name: install
     runs: |
       cp -r web/. "${{targets.destdir}}/usr/lib/pgadmin4/"
