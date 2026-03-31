@@ -48,8 +48,8 @@ pipeline:
     runs: |
       mkdir -p ${{targets.destdir}}/usr/lib/pgadmin4
       python${{vars.py-version}} -m venv --system-site-packages --without-pip --copies ${{targets.destdir}}/usr/lib/pgadmin4/venv
-      pip --python=/usr/lib/pgadmin4/venv/bin/python3.13 install --no-cache-dir --prefix=${{targets.destdir}}/usr/lib/pgadmin4/venv -r requirements.txt
-      pip --python=/usr/lib/pgadmin4/venv/bin/python3.13 install --no-cache-dir --prefix=${{targets.destdir}}/usr/lib/pgadmin4/venv gunicorn==23.0.0
+      pip install --no-cache-dir --prefix=${{targets.destdir}}/usr/lib/pgadmin4/venv -r requirements.txt
+      pip install --no-cache-dir --prefix=${{targets.destdir}}/usr/lib/pgadmin4/venv gunicorn==25.3.0
   - name: build-js
     runs: |
       cd web
