@@ -62,7 +62,7 @@ pipeline:
       yarn set version 4
       yarn install
       yarn run bundle
-      rm -rf yarn.lock package.json .[^.]* babel.cfg webpack.* jest.config.js babel.*
+      rm -rf node_modules pgadmin/static/js/generated/.cache yarn.lock package.json .[^.]* babel.cfg webpack.* jest.config.js babel.*
   - name: install
     runs: |
       cp -r web/. "${{targets.destdir}}/usr/lib/pgadmin4/"
