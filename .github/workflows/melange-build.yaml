@@ -106,7 +106,7 @@ jobs:
         uses: d4rkfella/actions/melange-build@main
         with:
           arch: ${{ matrix.arch }}
-          artifactory-access-token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+          oidc-provider-name: github-oidc
           artifactory-url: https://packages.darkfellanetwork.com
           artifactory-repository-path: wolfi-os/latest/main
           config: ${{ matrix.packages }}
