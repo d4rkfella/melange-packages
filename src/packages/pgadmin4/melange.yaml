@@ -1,7 +1,7 @@
 package:
   name: pgadmin4
   version: 9.13
-  epoch: 8
+  epoch: 9
   description: pgAdmin 4 - PostgreSQL Tools for the Web
   copyright:
     - license: PostgreSQL
@@ -50,6 +50,13 @@ pipeline:
       python${{vars.py-version}} -m venv --system-site-packages --without-pip --copies ${{targets.destdir}}/usr/lib/pgadmin4/venv
       ${{targets.destdir}}/usr/lib/pgadmin4/venv/bin/python3 -m pip install --no-cache-dir -r requirements.txt
       ${{targets.destdir}}/usr/lib/pgadmin4/venv/bin/python3 -m pip install --no-cache-dir gunicorn==25.3.0
+  - name: build-docs
+    runs: |
+      pip install --no-cache-dir sphinx sphinxcontrib-youtube
+      sphinx-build docs/en_US docs/en_US/_build/html
+      rm -rf docs/en_US/_build/html/.doctrees
+      rm -rf docs/en_US/_build/html/_sources
+      rm -rf docs/en_US/_build/html/_static/*.png
   - name: patch-webpack-config
     runs: |
       sed -i "s/filename: 'fonts\/\[name\]\.\[ext\]'/filename: 'fonts\/[base]'/" web/webpack.config.js
@@ -63,15 +70,14 @@ pipeline:
       yarn install
       yarn run bundle
       rm -rf node_modules pgadmin/static/js/generated/.cache yarn.lock package.json .[^.]* babel.cfg webpack.* jest.config.js babel.*
-  - name: install
+  - name: prepare package
     runs: |
+      mkdir -p "${{targets.destdir}}/usr/lib/pgadmin4/docs"
       cp -r web/. "${{targets.destdir}}/usr/lib/pgadmin4/"
-      
+      cp -r docs/en_US/_build/html/. "${{targets.destdir}}/usr/lib/pgadmin4/docs/"
       cp pkg/docker/run_pgadmin.py "${{targets.destdir}}/usr/lib/pgadmin4/"
       cp LICENSE "${{targets.destdir}}/usr/lib/pgadmin4/LICENSE"
-
       find "${{targets.destdir}}" -type d -name '__pycache__' -exec rm -rf {} + || true
-
 update:
   enabled: true
   version-transform:
