@@ -44,16 +44,16 @@ pipeline:
       repository: https://github.com/pgadmin-org/pgadmin4
       tag: REL-${{vars.mangled-package-version}}
       expected-commit: "5b231ddd3f7aca5d6e7c03c21e7e1bc94b8c3b03"
-  - name: build-venv
+  - name: setup-venv
     runs: |
       mkdir -p ${{targets.destdir}}/usr/lib/pgadmin4
       python${{vars.py-version}} -m venv --system-site-packages --without-pip --copies ${{targets.destdir}}/usr/lib/pgadmin4/venv
       ${{targets.destdir}}/usr/lib/pgadmin4/venv/bin/python3 -m pip install --no-cache-dir -r requirements.txt
       ${{targets.destdir}}/usr/lib/pgadmin4/venv/bin/python3 -m pip install --no-cache-dir gunicorn==25.3.0
+      ${{targets.destdir}}/usr/lib/pgadmin4/venv/bin/python3 -m pip install --no-cache-dir sphinx sphinxcontrib-youtube
   - name: build-docs
     runs: |
-      pip install --no-cache-dir sphinx sphinxcontrib-youtube
-      sphinx-build docs/en_US docs/en_US/_build/html
+      ${{targets.destdir}}/usr/lib/pgadmin4/venv/bin/python3 -m sphinx.cmd.build docs/en_US docs/en_US/_build/html
       rm -rf docs/en_US/_build/html/.doctrees
       rm -rf docs/en_US/_build/html/_sources
       rm -rf docs/en_US/_build/html/_static/*.png
