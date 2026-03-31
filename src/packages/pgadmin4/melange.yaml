@@ -1,7 +1,7 @@
 package:
   name: pgadmin4
   version: 9.13
-  epoch: 5
+  epoch: 6
   description: pgAdmin 4 - PostgreSQL Tools for the Web
   copyright:
     - license: PostgreSQL
@@ -48,8 +48,8 @@ pipeline:
     runs: |
       mkdir -p ${{targets.destdir}}/usr/lib/pgadmin4
       python${{vars.py-version}} -m venv --system-site-packages --without-pip --copies ${{targets.destdir}}/usr/lib/pgadmin4/venv
-      pip --python=${{targets.destdir}}/usr/lib/pgadmin4/venv/bin/python3.13 install --no-cache-dir --prefix=${{targets.destdir}}/usr/lib/pgadmin4/venv -r requirements.txt
-      pip --python=${{targets.destdir}}/usr/lib/pgadmin4/venv/bin/python3.13 install --no-cache-dir --prefix=${{targets.destdir}}/usr/lib/pgadmin4/venv gunicorn==23.0.0
+      pip --python=/usr/lib/pgadmin4/venv/bin/python3.13 install --no-cache-dir --prefix=${{targets.destdir}}/usr/lib/pgadmin4/venv -r requirements.txt
+      pip --python=/usr/lib/pgadmin4/venv/bin/python3.13 install --no-cache-dir --prefix=${{targets.destdir}}/usr/lib/pgadmin4/venv gunicorn==23.0.0
   - name: build-js
     runs: |
       cd web
