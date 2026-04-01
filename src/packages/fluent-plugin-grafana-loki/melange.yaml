@@ -5,12 +5,10 @@ package:
   description: Fluentd plugin to send logs to Grafana Loki
   copyright:
     - license: Apache-2.0
-
-dependencies:
-  runtime:
-    - ruby3.2-fluentd
-    - ruby3.2
-
+  dependencies:
+    runtime:
+      - ruby3.2-fluentd
+      - ruby3.2
 environment:
   contents:
     packages:
@@ -19,10 +17,8 @@ environment:
       - ca-certificates-bundle
       - ruby-3.2
       - ruby-3.2-dev
-
 vars:
   gem: fluent-plugin-grafana-loki
-
 pipeline:
   - uses: git-checkout
     with:
@@ -41,7 +37,6 @@ pipeline:
           gem: ${{vars.gem}}
           version: default
       - uses: ruby/clean
-
 test:
   environment:
     contents:
