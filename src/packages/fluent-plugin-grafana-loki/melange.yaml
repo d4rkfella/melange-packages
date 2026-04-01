@@ -35,7 +35,7 @@ pipeline:
       - uses: ruby/install
         with:
           gem: ${{vars.gem}}
-          version: default
+          version: ${{package.version}}
       - uses: ruby/clean
 test:
   environment:
