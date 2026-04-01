@@ -8,7 +8,6 @@ package:
   dependencies:
     runtime:
       - ruby3.2-fluentd
-      - ruby3.2
 environment:
   contents:
     packages:
