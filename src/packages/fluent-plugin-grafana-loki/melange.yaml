@@ -1,0 +1,54 @@
+package:
+  name: fluent-plugin-grafana-loki
+  version: 1.2.20
+  epoch: 0
+  description: Fluentd plugin to send logs to Grafana Loki
+  copyright:
+    - license: Apache-2.0
+
+dependencies:
+  runtime:
+    - ruby3.2-fluentd
+    - ruby3.2
+
+environment:
+  contents:
+    packages:
+      - build-base
+      - busybox
+      - ca-certificates-bundle
+      - ruby-3.2
+      - ruby-3.2-dev
+
+vars:
+  gem: fluent-plugin-grafana-loki
+
+pipeline:
+  - uses: git-checkout
+    with:
+      repository: https://github.com/grafana/loki
+      destination: ${{vars.gem}}
+      branch: main
+
+  - working-directory: ${{vars.gem}}/clients/cmd/fluentd
+    pipeline:
+      - uses: ruby/unlock-spec
+      - uses: ruby/build
+        with:
+          gem: ${{vars.gem}}
+      - uses: ruby/install
+        with:
+          gem: ${{vars.gem}}
+          version: default
+      - uses: ruby/clean
+
+test:
+  environment:
+    contents:
+      packages:
+        - ruby3.2-fluentd
+  pipeline:
+    - name: Test plugin installation
+      runs: |
+        set -euo pipefail
+        fluent-gem list | grep fluent-plugin-grafana-loki
