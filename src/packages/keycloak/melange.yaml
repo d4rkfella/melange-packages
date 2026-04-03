@@ -1,7 +1,7 @@
 package:
   name: keycloak-darkfellanet
-  version: "26.5.6"
-  epoch: 2
+  version: "26.5.7"
+  epoch: 0
   description: Open Source Identity and Access Management For Modern Applications and Services
   copyright:
     - license: Apache-2.0
@@ -11,10 +11,8 @@ package:
       - merged-usrsbin
       - openjdk-${{vars.java-version}}-default-jvm
       - wolfi-baselayout
-
 vars:
   java-version: 21
-
 environment:
   contents:
     packages:
@@ -35,14 +33,12 @@ environment:
     LANG: en_US.UTF-8
     JAVA_HOME: /usr/lib/jvm/java-${{vars.java-version}}-openjdk
     REPRODUCIBLE: false
-
 pipeline:
   - uses: git-checkout
     with:
       repository: https://github.com/keycloak/keycloak
       tag: ${{package.version}}
-      expected-commit: 7f8be2df2089c2cea85177f3548c9b220be7fdd3
-  
+      expected-commit: 97c2dad98597b17efae79006be47a51c6f5a72e9
   - uses: patch
     with:
       # Include package.json in order to get scanners to pick up on npm
@@ -52,21 +48,17 @@ pipeline:
       # See https://github.com/keycloak/keycloak/issues/36747 for upstream
       # discussion for how to fix this.
       patches: npm-packages.patch
-  
   - uses: maven/pombump
     with:
       patch-file: pombump-deps.yaml
       properties-file: pombump-properties.yaml
-  
   - runs: |
       gcc napi-static-assert.c -o /tmp/preload.so -fPIC -shared -ldl
-
   - name: Remediate pnpm and dedupe dependencies
     runs: |
       cd js
       pnpm audit --fix --prod
       pnpm dedupe
-  
   - runs: |
       export LD_PRELOAD=/tmp/preload.so
       ./mvnw clean install -DskipTests -Dmaven.test.skip=true -DskipITs -DskipProtoLock=true -Pdistribution
@@ -82,29 +74,24 @@ pipeline:
       for i in kc.sh kcadm.sh kcreg.sh; do
         ln -sf /usr/share/java/keycloak/bin/$i ${{targets.destdir}}/usr/bin/$i
       done
-
   - name: Ship flat js lockfile at top-level
     runs: |
       mkdir -p ${{targets.destdir}}/usr/share/java/keycloak/js
       cp js/pnpm-lock.yaml ${{targets.destdir}}/usr/share/java/keycloak/js/
-  
   - uses: git-checkout
     with:
       repository: https://github.com/d4rkfella/keycloak-custom-theme
       tag: v0.2.2
       expected-commit: 9a66f42498d2ce59ec7fd1342141719babbbe95e
-  
   - runs: |
       npm install
       npm run build-keycloak-theme
       cp dist_keycloak/keycloak-theme-for-kc-all-other-versions.jar ${{targets.destdir}}/usr/share/java/keycloak/providers/keycloak-theme.jar
-  
   - runs: |
       export KC_HEALTH_ENABLED=true
       export KC_METRICS_ENABLED=true
       export KC_DB=postgres
       cd "${{targets.destdir}}"/usr/share/java/keycloak && "${{targets.destdir}}"/usr/share/java/keycloak/bin/kc.sh build
-
 subpackages:
   - name: ${{package.name}}-operator
     dependencies:
