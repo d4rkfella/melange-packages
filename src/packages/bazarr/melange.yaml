@@ -36,7 +36,6 @@ pipeline:
   - name: Build frontend
     working-directory: /home/build/frontend
     runs: |
-      npx update-browserslist-db@latest
       npm install
       npm run build
   - name: Update vendored dependencies
