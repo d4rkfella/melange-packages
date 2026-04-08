@@ -4,35 +4,8 @@ on:
     - cron: '0 0 * * *'
   workflow_dispatch:
 jobs:
-  setup:
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-      renovator-version: ${{ steps.get-version.outputs.version }}
-    steps:
-      - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d # v2.16.1
-        with:
-          egress-policy: audit
-      
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
-      
-      - name: Setup workflow matrix
-        id: set-matrix
-        run: |
-          files=$(find . -name "melange.yaml" -print0 | xargs -0 -n1 | jq -R . | jq -cs '{path: .}')
-          echo "matrix=$files" >> "$GITHUB_OUTPUT"
-  
   update-packages:
-    needs: [setup]
     runs-on: ubuntu-24.04
-    strategy:
-      matrix:
-        path: ${{ fromJson(needs.setup.outputs.matrix).path }}
-      fail-fast: false
     permissions:
       contents: write
       pull-requests: write
@@ -47,27 +20,13 @@ jobs:
       
       - name: Run renovator
         id: check-updates
-        uses: docker://ghcr.io/d4rkfella/melange-renovator:2.2.22
+        uses: docker://ghcr.io/d4rkfella/melange-renovator:3.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: ${{ matrix.path }}
-      
-      - name: Create Pull Request
-        if: ${{ steps.check-updates.outputs.package_name != '' && steps.check-updates.outputs.package_version != '' }}
-        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
-        with:
-          title: '${{ steps.check-updates.outputs.package_name }}/${{ steps.check-updates.outputs.package_version }} package update'
-          add-paths: "${{ matrix.path }}"
-          branch: 'update-${{ steps.check-updates.outputs.package_name }}'
-          body: |
-            <p align="center">
-              <img
-                src="https://raw.githubusercontent.com/wolfi-dev/.github/b535a42419ce0edb3c144c0edcff55a62b8ec1f8/profile/wolfi-logo-light-mode.svg"
-              />
-            </p>
-          commit-message: '${{ steps.check-updates.outputs.package_name }}/${{ steps.check-updates.outputs.package_version }} package update'
-          sign-commits: true
-          labels: |
-            automated pr
-            request-version-update
+          args: >
+            -aws-endpoint=${{ secrets.AWS_ENDPOINT }}
+            -aws-access-key=${{ secrets.AWS_ACCESS_KEY_ID }}
+            -aws-secret-key=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            -s3-bucket=melange-renovator
+            -concurrency=10
