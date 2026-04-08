@@ -1,6 +1,6 @@
 package:
   name: keycloak-darkfellanet
-  version: "26.5.7"
+  version: "26.6.0"
   epoch: 0
   description: Open Source Identity and Access Management For Modern Applications and Services
   copyright:
@@ -39,7 +39,7 @@ pipeline:
     with:
       repository: https://github.com/keycloak/keycloak
       tag: ${{package.version}}
-      expected-commit: 97c2dad98597b17efae79006be47a51c6f5a72e9
+      expected-commit: 0526b94f0ddf166a210e39fd69d897ab4bb14431
   - uses: patch
     with:
       # Include package.json in order to get scanners to pick up on npm
@@ -82,8 +82,8 @@ pipeline:
   - uses: git-checkout
     with:
       repository: https://github.com/d4rkfella/keycloak-custom-theme
-      tag: v0.2.2
-      expected-commit: 9a66f42498d2ce59ec7fd1342141719babbbe95e
+      tag: v0.2.3
+      expected-commit: 877e4a7557e505425b21d8a7c6bc91fe24abd15d
   - runs: |
       npm install
       npm run build-keycloak-theme
