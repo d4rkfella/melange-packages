@@ -40,22 +40,8 @@ pipeline:
       repository: https://github.com/keycloak/keycloak
       tag: ${{package.version}}
       expected-commit: 5bebfac09dd9abc5fe8b43f00ac596f0a5c998d1
-  - uses: patch
-    with:
-      # Include package.json in order to get scanners to pick up on npm
-      # dependencies.
-      # Note: This over-matches the dependencies, since this also picks up
-      # everything in package.json, including dev dependencies.
-      # See https://github.com/keycloak/keycloak/issues/36747 for upstream
-      # discussion for how to fix this.
-      patches: npm-packages.patch
   - runs: |
       gcc napi-static-assert.c -o /tmp/preload.so -fPIC -shared -ldl
-  - name: Remediate pnpm and dedupe dependencies
-    runs: |
-      cd js
-      pnpm audit --fix --prod
-      pnpm dedupe
   - runs: |
       export LD_PRELOAD=/tmp/preload.so
       ./mvnw clean install -DskipTests -Dmaven.test.skip=true -DskipITs -DskipProtoLock=true -Pdistribution
@@ -71,10 +57,6 @@ pipeline:
       for i in kc.sh kcadm.sh kcreg.sh; do
         ln -sf /usr/share/java/keycloak/bin/$i ${{targets.destdir}}/usr/bin/$i
       done
-  - name: Ship flat js lockfile at top-level
-    runs: |
-      mkdir -p ${{targets.destdir}}/usr/share/java/keycloak/js
-      cp js/pnpm-lock.yaml ${{targets.destdir}}/usr/share/java/keycloak/js/
   - uses: git-checkout
     with:
       repository: https://github.com/d4rkfella/keycloak-custom-theme
