@@ -49,10 +49,6 @@ pipeline:
       # See https://github.com/keycloak/keycloak/issues/36747 for upstream
       # discussion for how to fix this.
       patches: npm-packages.patch
-  - uses: maven/pombump
-    with:
-      patch-file: pombump-deps.yaml
-      properties-file: pombump-properties.yaml
   - runs: |
       gcc napi-static-assert.c -o /tmp/preload.so -fPIC -shared -ldl
   - name: Remediate pnpm and dedupe dependencies
