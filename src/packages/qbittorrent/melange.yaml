@@ -33,6 +33,7 @@ pipeline:
       printf '%s\n' "qbt_build_dir=qbt-build" > env.custom
       printf '%s\n' "qbt_libtorrent_version=2.0" >> env.custom
       printf '%s\n' "qbt_qt_version=6" >> env.custom
+      printf '%s\n' "qbt_openssl_tag=openssl-3.6.2" >> env.custom
       printf '%s\n' "qbt_cross_name=${{build.arch}}" >> env.custom
       printf '%s\n' "qbt_patches_url=userdocs/qbittorrent-nox-static" >> env.custom
       printf '%s\n' "qbt_optimise_strip=yes" >> env.custom
