@@ -52,8 +52,7 @@ pipeline:
   - runs: |
       export $(cat env.custom)
       /usr/bin/env bash ./qbt-nox-static.bash
-      /usr/bin/env bash ./qbt-nox-static.bash update install_test
-      /usr/bin/env bash ./qbt-nox-static.bash update install_core
+      /usr/bin/env bash ./qbt-nox-static.bash bootstrap_deps
       /usr/bin/env bash ./qbt-nox-static.bash -bs-a
       /usr/bin/env bash ./qbt-nox-static.bash zlib
       /usr/bin/env bash ./qbt-nox-static.bash iconv
