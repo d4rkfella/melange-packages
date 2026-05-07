@@ -36,7 +36,6 @@ pipeline:
       printf '%s\n' "qbt_build_tool=" >> env.custom
       printf '%s\n' "qbt_cross_name=${{build.arch}}" >> env.custom
       printf '%s\n' "qbt_patches_url=userdocs/qbittorrent-nox-static" >> env.custom
-      printf '%s\n' "qbt_skip_icu=yes" >> env.custom
       printf '%s\n' "qbt_boost_tag=" >> env.custom
       printf '%s\n' "qbt_libtorrent_tag=" >> env.custom
       printf '%s\n' "qbt_qt_tag=" >> env.custom
@@ -54,12 +53,9 @@ pipeline:
       /usr/bin/env bash ./qbt-nox-static.bash bootstrap_deps
       /usr/bin/env bash ./qbt-nox-static.bash -bs-a
       /usr/bin/env bash ./qbt-nox-static.bash zlib
-      /usr/bin/env bash ./qbt-nox-static.bash iconv
-      /usr/bin/env bash ./qbt-nox-static.bash icu
       /usr/bin/env bash ./qbt-nox-static.bash openssl
       /usr/bin/env bash ./qbt-nox-static.bash boost
       /usr/bin/env bash ./qbt-nox-static.bash libtorrent
-      /usr/bin/env bash ./qbt-nox-static.bash double_conversion
       /usr/bin/env bash ./qbt-nox-static.bash qtbase
       /usr/bin/env bash ./qbt-nox-static.bash qttools
       /usr/bin/env bash ./qbt-nox-static.bash qbittorrent
