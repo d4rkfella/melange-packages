@@ -1,6 +1,6 @@
 package:
   name: pgadmin4
-  version: "9.14"
+  version: "9.15"
   epoch: 0
   description: pgAdmin 4 - PostgreSQL Tools for the Web
   copyright:
@@ -43,7 +43,7 @@ pipeline:
     with:
       repository: https://github.com/pgadmin-org/pgadmin4
       tag: REL-${{vars.mangled-package-version}}
-      expected-commit: "d8a078af5323d84f0970adf957673bde19026804"
+      expected-commit: "86a8b165abbefd62e78fd43edcd66c0d09649442"
   - name: setup-venv
     runs: |
       mkdir -p ${{targets.destdir}}/usr/lib/pgadmin4
