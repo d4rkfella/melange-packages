@@ -29,9 +29,7 @@ pipeline:
   - name: package
     runs: |
       mkdir -p ${{targets.destdir}}/usr/bin
-      mkdir -p ${{targets.destdir}}/usr/share/brrpolice/migrations
       cp target/${{build.arch}}-unknown-linux-gnu/release/brrpolice ${{targets.destdir}}/usr/bin/brrpolice
-      cp -r migrations/. ${{targets.destdir}}/usr/share/brrpolice/migrations/
 update:
   enabled: true
   github:
