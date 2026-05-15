@@ -20,7 +20,10 @@ pipeline:
     runs: |
       pnpm install --frozen-lockfile
       pnpm run build
-      cp -r dist internal/web/dist
+  - working-directory: /home/build
+    runs: |
+      mkdir -p internal/web/dist
+      cp -r web/dist/. internal/web/dist/
   - uses: go/build
     with:
       packages: ./cmd/qui
