@@ -1,7 +1,7 @@
 package:
   name: brrpolice
   version: "0.14.0"
-  epoch: 0
+  epoch: 1
   description: "brrpolice is a Rust service for qBittorrent seeding nodes. It watches peers, identifies peers that stay slow and do not make progress, applies temporary bans, and stores state in SQLite so decisions survive restarts."
   copyright:
     - license: Apache-2.0
@@ -29,7 +29,11 @@ pipeline:
   - name: package
     runs: |
       mkdir -p ${{targets.destdir}}/usr/bin
+      mkdir -p ${{targets.destdir}}/usr/share/brrpolice/migrations
+      mkdir -p ${{targets.destdir}}/app
       cp target/${{build.arch}}-unknown-linux-gnu/release/brrpolice ${{targets.destdir}}/usr/bin/brrpolice
+      cp -r migrations/. ${{targets.destdir}}/usr/share/brrpolice/migrations/
+      ln -s /usr/share/brrpolice/migrations ${{targets.destdir}}/app/migrations
 update:
   enabled: true
   github:
