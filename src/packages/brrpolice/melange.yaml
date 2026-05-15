@@ -1,0 +1,39 @@
+package:
+  name: brrpolice
+  version: "0.14.0"
+  epoch: 0
+  description: "brrpolice is a Rust service for qBittorrent seeding nodes. It watches peers, identifies peers that stay slow and do not make progress, applies temporary bans, and stores state in SQLite so decisions survive restarts."
+  copyright:
+    - license: Apache-2.0
+environment:
+  contents:
+    packages:
+      - build-base
+      - cargo-auditable
+      - rust
+      - ca-certificates
+pipeline:
+  - uses: git-checkout
+    with:
+      repository: https://github.com/Zariel/brrpolice
+      tag: v${{package.version}}
+      expected-commit: bafc40ac06a640d6f36b927828542cff73c7aa46
+  - name: build
+    runs: |
+      cargo auditable build \
+        --release \
+        --locked \
+        -p brrpolice \
+        --bin brrpolice \
+        --target ${{build.arch}}-unknown-linux-gnu
+  - name: package
+    runs: |
+      mkdir -p ${{targets.destdir}}/usr/bin
+      mkdir -p ${{targets.destdir}}/usr/share/brrpolice/migrations
+      cp target/${{build.arch}}-unknown-linux-gnu/release/brrpolice ${{targets.destdir}}/usr/bin/brrpolice
+      cp -r migrations/. ${{targets.destdir}}/usr/share/brrpolice/migrations/
+update:
+  enabled: true
+  github:
+    identifier: Zariel/brrpolice
+    strip-prefix: v
