@@ -1,0 +1,37 @@
+package:
+  name: qui
+  version: "1.18.0"
+  epoch: 0
+  description: "A fast, single-binary qBittorrent web UI: manage multiple instances, automate torrent workflows, and cross-seed across trackers."
+  copyright:
+    - license: GPL-2.0-or-later
+environment:
+  contents:
+    packages:
+      - nodejs-22
+      - pnpm
+pipeline:
+  - uses: git-checkout
+    with:
+      repository: https://github.com/autobrr/qui
+      tag: v${{package.version}}
+      expected-commit: 82029d64e8cbbf076b1b80ae1d92ab595339093c
+  - working-directory: /home/build/web
+    runs: |
+      pnpm install --frozen-lockfile
+      pnpm run build
+      cp -r dist internal/web/dist
+  - uses: go/build
+    with:
+      packages: ./cmd/qui
+      output: qui
+      ldflags: >-
+        -X github.com/autobrr/qui/internal/buildinfo.Version=${{package.version}}
+        -X github.com/autobrr/qui/internal/buildinfo.Commit=$(git rev-parse HEAD)
+        -X github.com/autobrr/qui/internal/buildinfo.Date=$(git show -s --date=format:%Y-%m-%dT%H:%M:%SZ --format=%cd HEAD)
+  - uses: strip
+update:
+  enabled: true
+  github:
+    identifier: autobrr/qui
+    strip-prefix: v
