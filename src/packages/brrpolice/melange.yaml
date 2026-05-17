@@ -39,3 +39,4 @@ update:
   github:
     identifier: Zariel/brrpolice
     strip-prefix: v
+    use-tag: true
