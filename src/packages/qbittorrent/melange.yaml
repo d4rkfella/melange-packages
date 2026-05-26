@@ -1,6 +1,6 @@
 package:
   name: qbittorrent
-  version: "5.2.0.2012"
+  version: "5.2.1.2012"
   epoch: 0
   description: The qbittorrent-nox-static project is a bash build script that compiles a static qbittorrent-nox binary using the latest available dependencies from their source.
   copyright:
@@ -28,7 +28,7 @@ pipeline:
     with:
       repository: https://github.com/userdocs/qbittorrent-nox-static
       tag: release-${{vars.mangled-package-version}}
-      expected-commit: bd11018bb8753141a6ff9198759e306195216e8c
+      expected-commit: be7c402ad6a7c7a1141daca19374e1c532a65116
   - runs: |
       printf '%s\n' "qbt_build_dir=qbt-build" > env.custom
       printf '%s\n' "qbt_libtorrent_version=2.0" >> env.custom
