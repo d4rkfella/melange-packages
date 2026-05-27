@@ -1,6 +1,6 @@
 package:
   name: opnsense-exporter
-  version: "0.0.15"
+  version: "0.0.16"
   epoch: 0
   description: OPNsense Exporter for Prometheus
   copyright:
@@ -10,7 +10,7 @@ pipeline:
     with:
       repository: https://github.com/AthennaMind/opnsense-exporter
       tag: v${{package.version}}
-      expected-commit: 95d80d5eb8136a8b08436baec0be5f0016027cb8
+      expected-commit: b626254abe4820de1254f313be05b7089c6956be
   - uses: go/build
     with:
       packages: main.go
