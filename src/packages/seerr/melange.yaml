@@ -43,7 +43,7 @@ pipeline:
       mkdir -p "${{targets.destdir}}/usr/lib/seerr"
       rm -rf .next/cache
       echo "{\"commitTag\": \"$(git rev-parse HEAD)\"}" > committag.json
-      cp -af seerr-api.yml next.config.js package.json committag.json .next public dist node_modules "${{targets.destdir}}/usr/lib/seerr"
+      cp -af seerr-api.yml next.config.ts package.json committag.json .next public dist node_modules "${{targets.destdir}}/usr/lib/seerr"
 test:
   environment:
     contents:
