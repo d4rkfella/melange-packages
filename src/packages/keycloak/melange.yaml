@@ -63,7 +63,7 @@ pipeline:
       tag: v0.3.0
       expected-commit: 2549c67f74bc925dca9c34d68b61e3c2ca668178
   - runs: |
-      npm install
+      npm install --legacy-peer-deps
       npm run build-keycloak-theme
       cp dist_keycloak/keycloak-theme-for-kc-all-other-versions.jar ${{targets.destdir}}/usr/share/java/keycloak/providers/keycloak-theme.jar
   - runs: |
