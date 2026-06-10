@@ -1,6 +1,6 @@
 package:
   name: radarr
-  version: "6.2.1.10437"
+  version: "6.2.1.10461"
   epoch: 0
   description: Movie download automation for usenet and torrents.
   copyright:
@@ -20,7 +20,7 @@ environment:
 pipeline:
   - uses: git-checkout
     with:
-      expected-commit: 520bf4215a13223433ef6c77ad7e822cd8359c94
+      expected-commit: 4dcc7c78317ec2a58578c35bfa6dae559d98548f
       repository: https://github.com/Radarr/Radarr
       tag: v${{package.version}}
   - name: Build
