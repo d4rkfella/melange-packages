@@ -57,9 +57,6 @@ pipeline:
       rm -rf docs/en_US/_build/html/.doctrees
       rm -rf docs/en_US/_build/html/_sources
       rm -rf docs/en_US/_build/html/_static/*.png
-  - name: patch-webpack-config
-    runs: |
-      sed -i "s/filename: 'fonts\/\[name\]\.\[ext\]'/filename: 'fonts\/[base]'/" web/webpack.config.js
   - name: build-js
     runs: |
       cd web
