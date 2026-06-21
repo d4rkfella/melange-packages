@@ -37,35 +37,8 @@ pipeline:
   - name: Build frontend
     working-directory: /home/build/frontend
     runs: |
-      npx update-browserslist-db@latest
       npm install
       npm run build
-  - name: Update vendored dependencies
-    runs: |
-      set -euo pipefail
-
-      DEST_DIR="/tmp"
-      LIBS_DIR="libs"
-
-      echo "Updating vendored dependencies..."
-      for entry in \
-        "requests-2.32.5.dist-info requests==2.33.0"
-      do
-          OLD_DIST=$(printf '%s' "$entry" | cut -d' ' -f1)
-          NEW_SPEC=$(printf '%s' "$entry" | cut -d' ' -f2)
-
-          PACKAGE_NAME=$(printf '%s' "$NEW_SPEC" | cut -d= -f1)
-          VERSION=$(printf '%s' "$NEW_SPEC" | cut -d= -f3)
-
-          if [ -d "$LIBS_DIR/$OLD_DIST" ]; then
-              echo "Updating $PACKAGE_NAME to version $VERSION..."
-              rm -rf "$LIBS_DIR/$OLD_DIST"
-              pip download --no-deps --dest="$DEST_DIR" "$NEW_SPEC"
-              python3 -m zipfile -e "$DEST_DIR/${PACKAGE_NAME}-${VERSION}-py3-none-any.whl" "$LIBS_DIR/"
-          else
-              echo "Warning: $LIBS_DIR/$OLD_DIST not found, skipping"
-          fi
-      done
   - name: Fix SSL verification
     runs: |
       set -euo pipefail
