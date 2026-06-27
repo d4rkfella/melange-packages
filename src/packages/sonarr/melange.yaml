@@ -1,6 +1,6 @@
 package:
   name: sonarr
-  version: "4.0.18.2971"
+  version: "4.0.19.2979"
   epoch: 0
   description: Sonarr is a PVR for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new episodes of your favorite shows and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
   copyright:
@@ -22,7 +22,7 @@ environment:
 pipeline:
   - uses: git-checkout
     with:
-      expected-commit: d41805bbbbaee5f76f8125c5ef1013896416bc5e
+      expected-commit: 4ff1b780010d3d9ec76a4864dce96b6494e9caea
       repository: https://github.com/Sonarr/Sonarr
       tag: v${{package.version}}
   - name: Build
