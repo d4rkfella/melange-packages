@@ -86,7 +86,7 @@ pipeline:
       echo "Removing Prowlarr.Windows"
       rm $_artifacts/Prowlarr.Windows.*
 
-      rm -f "$_artifacts/libmsalruntime.so
+      rm -f "$_artifacts"/libmsalruntime.so
 
       cp -af "$_artifacts" "$_destdir/bin"
 
