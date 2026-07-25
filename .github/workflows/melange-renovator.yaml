@@ -30,3 +30,4 @@ jobs:
             -aws-secret-key=${{ secrets.AWS_SECRET_ACCESS_KEY }}
             -s3-bucket=melange-renovator
             -concurrency=10
+            -json
