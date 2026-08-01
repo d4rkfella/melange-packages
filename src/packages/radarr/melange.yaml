@@ -1,7 +1,7 @@
 package:
   name: radarr
   version: "6.4.0.10540"
-  epoch: 3
+  epoch: 4
   description: Movie download automation for usenet and torrents.
   copyright:
     - license: GPL-3.0-only
@@ -92,6 +92,7 @@ pipeline:
       \) -delete
 
       mv "$_artifacts" "$_destdir/bin"
+      mv LICENSE.md "$_destdir/bin"
 
       ln -s /usr/lib/radarr/bin/Radarr "${{targets.destdir}}/usr/bin/Radarr"
   - uses: strip
