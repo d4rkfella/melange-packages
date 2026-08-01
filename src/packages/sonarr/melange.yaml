@@ -100,7 +100,7 @@ test:
         EXPECTED_VERSION="${{package.version}}" ./test.sh
 update:
   enabled: true
+  enable-prerelease-tags: true
   github:
     identifier: Sonarr/Sonarr
-    enable-prerelease-tags: true
     strip-prefix: v
