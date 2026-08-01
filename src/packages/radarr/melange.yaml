@@ -84,12 +84,12 @@ pipeline:
       cp $_artifacts/Mono.Posix.NETStandard.* $_artifacts/Radarr.Update
       cp $_artifacts/libMonoPosixHelper.* $_artifacts/Radarr.Update
 
-      echo "Removing Service helpers"
-      rm -f $_artifacts/ServiceUninstall.*
-      rm -f $_artifacts/ServiceInstall.*
-
-      echo "Removing Radarr.Windows"
-      rm $_artifacts/Radarr.Windows.*
+      find "$_artifacts" \( \
+        -name "ServiceUninstall.*" -o \
+        -name "ServiceInstall.*" -o \
+        -name "Radarr.Windows.*" -o \
+        -name "libcoreclrtraceptprovider.so" \
+      \) -delete
 
       cp -af "$_artifacts" "$_destdir/bin"
 
@@ -103,9 +103,7 @@ test:
         - bash
         - jq
         - xmlstarlet
-        - lttng-ust
   pipeline:
-    - runs: ln -s /usr/lib/liblttng-ust.so.1 /usr/lib/liblttng-ust.so.0
     - name: Check for missing dependancies
       uses: test/tw/ldd-check
       with:
