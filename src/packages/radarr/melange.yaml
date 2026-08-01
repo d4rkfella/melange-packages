@@ -1,7 +1,7 @@
 package:
   name: radarr
   version: "6.4.0.10540"
-  epoch: 2
+  epoch: 3
   description: Movie download automation for usenet and torrents.
   copyright:
     - license: GPL-3.0-only
@@ -76,8 +76,8 @@ pipeline:
 
       printf "UpdateMethod=docker\nBranch=%s\nPackageVersion=%s\nPackageAuthor=[d4rkfella](https://github.com/d4rkfella)\n" "develop" "${{package.version}}" > "$_destdir/package_info"
 
-      cp -r "$_output/UI" "$_artifacts"
-      cp -r $_output/Radarr.Update/$_framework/$_runtime/publish $_artifacts/Radarr.Update
+      mv "$_output/UI" "$_artifacts"
+      mv $_output/Radarr.Update/$_framework/$_runtime/publish $_artifacts/Radarr.Update
 
       echo "Adding Radarr.Mono to UpdatePackage"
       cp $_artifacts/Radarr.Mono.* $_artifacts/Radarr.Update
@@ -91,7 +91,7 @@ pipeline:
         -name "libcoreclrtraceptprovider.so" \
       \) -delete
 
-      cp -af "$_artifacts" "$_destdir/bin"
+      mv "$_artifacts" "$_destdir/bin"
 
       ln -s /usr/lib/radarr/bin/Radarr "${{targets.destdir}}/usr/bin/Radarr"
   - uses: strip
