@@ -38,7 +38,7 @@ pipeline:
 
       _dotnet_arch="$runtime_arch"
       _runtime="linux-$_dotnet_arch"
-      _framework="net6.0"
+      _framework="$(grep -oPm1 '(?<=<TargetFrameworks>)[^<;]+' src/NzbDrone.Host/Sonarr.Host.csproj)"
       _output="_output"
       _destdir="${{targets.destdir}}/usr/lib/sonarr"
       _artifacts="$_output/$_framework/$_runtime/publish"
