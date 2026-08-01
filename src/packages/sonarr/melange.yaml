@@ -28,6 +28,8 @@ pipeline:
       curl -sSL https://builds.dotnet.microsoft.com/dotnet/scripts/v1/dotnet-install.sh | bash -s -- --jsonfile global.json
   - name: Build
     runs: |
+      PATH="$HOME/.volta/bin:$HOME/.dotnet:$PATH"
+      
       if [[ "${{build.arch}}" == "aarch64" ]]; then
         runtime_arch="arm64"
       elif [[ "${{build.arch}}" == "x86_64" ]]; then
