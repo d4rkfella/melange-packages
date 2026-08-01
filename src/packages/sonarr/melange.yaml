@@ -38,7 +38,7 @@ pipeline:
 
       _dotnet_arch="$runtime_arch"
       _runtime="linux-$_dotnet_arch"
-      _framework="$(grep -oPm1 '(?<=<TargetFrameworks>)[^<;]+' src/NzbDrone.Host/Sonarr.Host.csproj)"
+      _framework=$(sed -n 's:.*<TargetFrameworks>\([^<;]*\).*:\1:p' src/NzbDrone.Host/Sonarr.Host.csproj | head -n1)
       _output="_output"
       _destdir="${{targets.destdir}}/usr/lib/sonarr"
       _artifacts="$_output/$_framework/$_runtime/publish"
@@ -67,6 +67,7 @@ pipeline:
         -name "ServiceUninstall.*" -o \
         -name "ServiceInstall.*" -o \
         -name "Sonarr.Windows.*" \
+        -name "libcoreclrtraceptprovider.so" \
       \) -delete
 
       mv "$_output"/UI "$_artifacts"
@@ -88,9 +89,7 @@ test:
         - bash
         - jq
         - xmlstarlet
-        - lttng-ust
   pipeline:
-    - runs: ln -s /usr/lib/liblttng-ust.so.1 /usr/lib/liblttng-ust.so.0
     - name: Check for missing dependancies
       uses: test/tw/ldd-check
       with:
