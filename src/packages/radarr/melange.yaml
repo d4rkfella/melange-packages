@@ -92,7 +92,7 @@ pipeline:
       \) -delete
 
       mv "$_artifacts" "$_destdir/bin"
-      mv LICENSE.md "$_destdir/bin"
+      mv LICENSE "$_destdir/bin"
 
       ln -s /usr/lib/radarr/bin/Radarr "${{targets.destdir}}/usr/bin/Radarr"
   - uses: strip
