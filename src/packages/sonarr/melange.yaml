@@ -1,21 +1,17 @@
 package:
   name: sonarr
   version: 4.0.16.2944
-  epoch: 1
+  epoch: 2
   description: Sonarr is a PVR for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new episodes of your favorite shows and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
   copyright:
     - license: GPL-3.0-only
-  dependencies:
-    runtime:
-      - aspnet-6-runtime
-      - sqlite-libs
 environment:
   environment:
-    PACKAGE_UPDATE_USE_PRERELEASE: true
+    PATH: "$HOME/.volta/bin:$HOME/.dotnet:$PATH"
+    BROWSERSLIST_IGNORE_OLD_DATA: true
   contents:
     packages:
       - wolfi-baselayout
-      - dotnet-6-sdk
       - nodejs
       - yarn
       - jq
@@ -25,6 +21,10 @@ pipeline:
       expected-commit: 52972e7efcce800560cbbaa64f5f76aaef6cbe77
       repository: https://github.com/Sonarr/Sonarr
       tag: v${{package.version}}
+  - name: Install dependancies
+    runs: |
+      curl -sSL https://get.volta.sh | bash
+      curl -sSL https://builds.dotnet.microsoft.com/dotnet/scripts/v1/dotnet-install.sh | bash -s -- --jsonfile global.json
   - name: Build
     runs: |
       if [[ "${{build.arch}}" == "aarch64" ]]; then
@@ -33,11 +33,7 @@ pipeline:
         runtime_arch="x64"
       fi
 
-      export BROWSERSLIST_IGNORE_OLD_DATA=true
-
       yarn install --frozen-lockfile --network-timeout 120000
-
-      echo '{"sdk":{"version":"6.0.136"}}' > global.json
 
       _dotnet_arch="$runtime_arch"
       _runtime="linux-$_dotnet_arch"
@@ -55,7 +51,7 @@ pipeline:
         -p:Configuration=Release \
         -p:DebugSymbols=false \
         -p:DebugType=none \
-        -p:SelfContained=false \
+        -p:SelfContained=true \
         -p:SentryCliExecutable= \
         -p:SentryUploadSymbols=false \
         -p:SentryIncludeSources=false \
