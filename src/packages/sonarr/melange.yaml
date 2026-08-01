@@ -66,7 +66,7 @@ pipeline:
       find "$_artifacts" \( \
         -name "ServiceUninstall.*" -o \
         -name "ServiceInstall.*" -o \
-        -name "Sonarr.Windows.*" \
+        -name "Sonarr.Windows.*" -o \
         -name "libcoreclrtraceptprovider.so" \
       \) -delete
 
