@@ -8,6 +8,9 @@ package:
   dependencies:
     runtime:
       - icu-libs
+      - sqlite-libs
+      - libssl3
+      - zlib
 environment:
   contents:
     packages:
