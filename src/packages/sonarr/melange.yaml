@@ -6,9 +6,6 @@ package:
   copyright:
     - license: GPL-3.0-only
 environment:
-  environment:
-    PATH: "$HOME/.volta/bin:$HOME/.dotnet:$PATH"
-    BROWSERSLIST_IGNORE_OLD_DATA: true
   contents:
     packages:
       - build-base
@@ -28,6 +25,7 @@ pipeline:
       curl -sSL https://builds.dotnet.microsoft.com/dotnet/scripts/v1/dotnet-install.sh | bash -s -- --jsonfile global.json
   - name: Build
     runs: |
+      export BROWSERSLIST_IGNORE_OLD_DATA=true
       PATH="$HOME/.volta/bin:$HOME/.dotnet:$PATH"
       
       if [[ "${{build.arch}}" == "aarch64" ]]; then
@@ -104,4 +102,5 @@ update:
   enabled: true
   github:
     identifier: Sonarr/Sonarr
+    enable-prerelease-tags: true
     strip-prefix: v
