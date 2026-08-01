@@ -11,10 +11,11 @@ environment:
     BROWSERSLIST_IGNORE_OLD_DATA: true
   contents:
     packages:
-      - wolfi-baselayout
-      - nodejs
-      - yarn
-      - jq
+      - build-base
+      - ca-certificates-bundle
+      - bash
+      - curl
+      - icu
 pipeline:
   - uses: git-checkout
     with:
