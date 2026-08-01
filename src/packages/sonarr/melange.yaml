@@ -48,19 +48,19 @@ pipeline:
 
       ulimit -n 4096
 
-      dotnet publish src \
+      dotnet msbuild -restore src/Sonarr.sln \
+        -p:Configuration=Release \
+        -p:Platform=Posix \
+        -p:RuntimeIdentifiers="$_runtime" \
         -p:AssemblyConfiguration="main" \
         -p:AssemblyVersion="${{package.version}}" \
-        -p:RuntimeIdentifier="$_runtime" \
-        -p:Configuration=Release \
         -p:DebugSymbols=false \
         -p:DebugType=none \
-        -p:SelfContained=true \
         -p:SentryCliExecutable= \
         -p:SentryUploadSymbols=false \
         -p:SentryIncludeSources=false \
         -p:EmbedAllSources=false \
-        -f "$_framework"
+        -t:PublishAllRids
 
       yarn build --env production --no-stats
 
