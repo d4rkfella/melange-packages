@@ -45,7 +45,7 @@ pipeline:
 
       _dotnet_arch="$runtime_arch"
       _runtime="linux-$_dotnet_arch"
-      _framework=$(sed -n 's:.*<TargetFrameworks>\([^<;]*\).*:\1:p' src/NzbDrone.Host/Radarr.Host.csproj | head -n1)
+      _framework="$(sed -n 's:.*<TargetFrameworks>\([^<;]*\).*:\1:p' src/NzbDrone.Host/Radarr.Host.csproj | head -n1)"
       _output="_output"
       _destdir="${{targets.destdir}}/usr/lib/radarr"
       _artifacts="$_output/$_framework/$_runtime/publish"
@@ -77,12 +77,12 @@ pipeline:
       printf "UpdateMethod=docker\nBranch=%s\nPackageVersion=%s\nPackageAuthor=[d4rkfella](https://github.com/d4rkfella)\n" "develop" "${{package.version}}" > "$_destdir/package_info"
 
       mv "$_output/UI" "$_artifacts"
-      mv $_output/Radarr.Update/$_framework/$_runtime/publish $_artifacts/Radarr.Update
+      mv "$_output/Radarr.Update/$_framework/$_runtime/publish" "$_artifacts/Radarr.Update"
 
       echo "Adding Radarr.Mono to UpdatePackage"
-      cp $_artifacts/Radarr.Mono.* $_artifacts/Radarr.Update
-      cp $_artifacts/Mono.Posix.NETStandard.* $_artifacts/Radarr.Update
-      cp $_artifacts/libMonoPosixHelper.* $_artifacts/Radarr.Update
+      cp "$_artifacts/Radarr.Mono.*" "$_artifacts/Radarr.Update"
+      cp "$_artifacts/Mono.Posix.NETStandard.*" "$_artifacts/Radarr.Update"
+      cp "$_artifacts/libMonoPosixHelper.*" "$_artifacts/Radarr.Update"
 
       find "$_artifacts" \( \
         -name "ServiceUninstall.*" -o \
@@ -92,7 +92,7 @@ pipeline:
       \) -delete
 
       mv "$_artifacts" "$_destdir/bin"
-      mv LICENSE "$_destdir/bin"
+      mv "LICENSE" "$_destdir/bin"
 
       ln -s /usr/lib/radarr/bin/Radarr "${{targets.destdir}}/usr/bin/Radarr"
   - uses: strip
