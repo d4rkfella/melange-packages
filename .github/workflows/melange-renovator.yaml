@@ -20,7 +20,7 @@ jobs:
       
       - name: Run renovator
         id: check-updates
-        uses: docker://ghcr.io/d4rkfella/melange-renovator:0.0.0-dev.20260802204328
+        uses: docker://ghcr.io/d4rkfella/melange-renovator:0.0.0-dev.20260802215205
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
