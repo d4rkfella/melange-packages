@@ -31,7 +31,7 @@ jobs:
         id: check-updates
         uses: docker://ghcr.io/d4rkfella/melange-renovator:0.0.0-dev.20260802215205
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         with:
           args: >
             --aws-endpoint=${{ secrets.AWS_ENDPOINT }}
