@@ -1,7 +1,7 @@
 package:
   name: radarr
   version: "6.4.0.10540"
-  epoch: 5
+  epoch: 6
   description: Movie download automation for usenet and torrents.
   copyright:
     - license: GPL-3.0-only
