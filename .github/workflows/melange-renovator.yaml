@@ -32,11 +32,9 @@ jobs:
         uses: docker://ghcr.io/d4rkfella/melange-renovator:0.0.0-dev.20260804162635
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-        with:
-          args: >
-            --aws-endpoint=${{ secrets.AWS_ENDPOINT }}
-            --aws-access-key=${{ secrets.AWS_ACCESS_KEY_ID }}
-            --aws-secret-key=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            --s3-bucket=melange-renovator
-            --log-level=debug
-            --token=${{ steps.app-token.outputs.token }}
+          RENOVATE_TOKEN: ${{ steps.app-token.outputs.token }}
+          RENOVATE_AWS_ENDPOINT: ${{ secrets.AWS_ENDPOINT }}
+          RENOVATE_AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          RENOVATE_AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          RENOVATE_S3_BUCKET: melange-renovator
+          RENOVATE_LOG_LEVEL: debug
