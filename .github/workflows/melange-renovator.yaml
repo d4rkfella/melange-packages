@@ -29,9 +29,8 @@ jobs:
       
       - name: Run renovator
         id: check-updates
-        uses: docker://ghcr.io/d4rkfella/melange-renovator:0.0.0-dev.20260804162635
+        uses: docker://ghcr.io/d4rkfella/melange-renovator:0.0.0-dev.20260804213117
         env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           RENOVATE_TOKEN: ${{ steps.app-token.outputs.token }}
           RENOVATE_AWS_ENDPOINT: ${{ secrets.AWS_ENDPOINT }}
           RENOVATE_AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY_ID }}
