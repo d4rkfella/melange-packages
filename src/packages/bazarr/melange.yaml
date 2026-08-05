@@ -1,6 +1,6 @@
 package:
   name: bazarr
-  version: "1.6.1_beta16"
+  version: "1.6.1_beta17"
   epoch: 0
   description: Bazarr is a companion application to Sonarr and Radarr. It manages and downloads subtitles based on your requirements. You define your preferences by TV show or movie and Bazarr takes care of everything for you.
   copyright:
@@ -28,7 +28,7 @@ environment:
 pipeline:
   - uses: git-checkout
     with:
-      expected-commit: 827ccf99fa6f1e5f59b30756640021edb684d3ca
+      expected-commit: 6f18285067e59155d960ecf9cd132288dbb9b7c9
       repository: https://github.com/morpheus65535/bazarr
       tag: v${{vars.mangled-package-version}}
   - uses: patch
@@ -43,7 +43,7 @@ pipeline:
     runs: |
       set -euo pipefail
 
-      if ! head -n 15 "libs/urllib3/connectionpool.py" | grep -q "import ssl"; then   
+      if ! head -n 15 "libs/urllib3/connectionpool.py" | grep -q "import ssl"; then
         sed -i '/from __future__ import annotations/a import ssl' "libs/urllib3/connectionpool.py"
         echo "'ssl package import' has been added to the top of the file."
       else
