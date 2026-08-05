@@ -41,6 +41,9 @@ pipeline:
       
       export BROWSERSLIST_IGNORE_OLD_DATA=true
 
+      volta install node@20
+      volta install yarn@1.22
+
       yarn install --frozen-lockfile --network-timeout 120000
 
       _dotnet_arch="$runtime_arch"
