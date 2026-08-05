@@ -56,6 +56,7 @@ pipeline:
       ulimit -n 4096
 
       dotnet msbuild -restore src/Prowlarr.sln \
+        -p:SelfContained=True \
         -p:Configuration=Release \
         -p:Platform=Posix \
         -p:RuntimeIdentifiers="$_runtime" \
