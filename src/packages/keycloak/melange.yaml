@@ -1,7 +1,7 @@
 package:
   name: keycloak-darkfellanet
-  version: "26.7.0"
-  epoch: 1
+  version: "26.7.1"
+  epoch: 0
   description: Open Source Identity and Access Management For Modern Applications and Services
   copyright:
     - license: Apache-2.0
@@ -39,7 +39,7 @@ pipeline:
     with:
       repository: https://github.com/keycloak/keycloak
       tag: ${{package.version}}
-      expected-commit: 6c73e3027811d9c7b22683edd825e839272e9547
+      expected-commit: 73f08b397f193712b26d317210dce99898129709
   - runs: |
       gcc napi-static-assert.c -o /tmp/preload.so -fPIC -shared -ldl
   - runs: |
@@ -60,8 +60,8 @@ pipeline:
   - uses: git-checkout
     with:
       repository: https://github.com/d4rkfella/keycloak-custom-theme
-      tag: v0.3.4
-      expected-commit: 312c1bc727c1a658b80c199947fa3eab9a3059fa
+      tag: v0.3.5
+      expected-commit: c29fe8c471353684dccffa97ae88806d55d45b4c
   - runs: |
       npm install --legacy-peer-deps
       npm run build-keycloak-theme
