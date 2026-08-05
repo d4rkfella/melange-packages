@@ -19,7 +19,7 @@ environment:
       - bash
       - curl
       - icu
-  enviroment:
+  environment:
     REPRODUCIBLE: false
 pipeline:
   - uses: git-checkout
