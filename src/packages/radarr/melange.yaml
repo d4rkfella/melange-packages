@@ -1,7 +1,7 @@
 package:
   name: radarr
   version: "6.4.1.10545"
-  epoch: 2
+  epoch: 0
   description: Movie download automation for usenet and torrents.
   copyright:
     - license: GPL-3.0-only
@@ -19,6 +19,8 @@ environment:
       - bash
       - curl
       - icu
+  enviroment:
+    REPRODUCIBLE: false
 pipeline:
   - uses: git-checkout
     with:
