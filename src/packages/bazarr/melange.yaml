@@ -43,7 +43,7 @@ pipeline:
     runs: |
       set -euo pipefail
 
-      if ! head -n 15 "libs/urllib3/connectionpool.py" | grep -q "import ssl"; then
+      if ! head -n 15 "libs/urllib3/connectionpool.py" | grep -q "import ssl"; then   
         sed -i '/from __future__ import annotations/a import ssl' "libs/urllib3/connectionpool.py"
         echo "'ssl package import' has been added to the top of the file."
       else
