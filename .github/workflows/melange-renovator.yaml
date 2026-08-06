@@ -27,7 +27,7 @@ jobs:
         env:
           RENOVATE_AUTODISCOVER: true
           RENOVATE_AUTODISCOVER_FILTER: ${{ github.repository }}
-          RENOVATE_CONFIG_FILE_PATTERNS: "(^|/)melange\\.ya?ml$"
+          RENOVATE_CONFIG_FILE_PATTERNS: '^src/packages/[^/]+/melange\.ya?ml$'
           RENOVATE_TOKEN: ${{ steps.app-token.outputs.token }}
           RENOVATE_AWS_ENDPOINT: ${{ secrets.AWS_ENDPOINT }}
           RENOVATE_AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY_ID }}
