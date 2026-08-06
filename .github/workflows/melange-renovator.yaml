@@ -21,8 +21,7 @@ jobs:
           client-id: ${{ secrets.BOT_APP_ID }}
           private-key: ${{ secrets.BOT_APP_PRIVATE_KEY }}
 
-      - name: Run renovator
-        id: check-updates
+      - name: Run Renovate
         uses: docker://ghcr.io/d4rkfella/melange-renovator:latest
         env:
           RENOVATE_AUTODISCOVER: true
