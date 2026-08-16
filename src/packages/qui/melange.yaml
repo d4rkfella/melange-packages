@@ -1,6 +1,6 @@
 package:
   name: qui
-  version: "1.25.0"
+  version: "1.26.0"
   epoch: 0
   description: "A fast, single-binary qBittorrent web UI: manage multiple instances, automate torrent workflows, and cross-seed across trackers."
   copyright:
@@ -15,7 +15,7 @@ pipeline:
     with:
       repository: https://github.com/autobrr/qui
       tag: v${{package.version}}
-      expected-commit: ea428ade61c6ce47d87f79719b2a6138e4f2005a
+      expected-commit: 0f916015ec2ecab9c1c3e83915af015f5e31d0d7
   - working-directory: /home/build/web
     runs: |
       pnpm install --frozen-lockfile
