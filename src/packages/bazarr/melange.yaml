@@ -19,6 +19,7 @@ environment:
     PYTHONHASHSEED: 0
     PYTHONDONTWRITEBYTECODE: 1
     HUSKY: 0
+    REPRODUCIBLE: false
   contents:
     packages:
       - python-3.13
