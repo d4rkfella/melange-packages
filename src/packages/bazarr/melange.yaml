@@ -1,7 +1,7 @@
 package:
   name: bazarr
-  version: "1.6.1_beta25"
-  epoch: 2
+  version: "1.6.1_beta26"
+  epoch: 0
   description: Bazarr is a companion application to Sonarr and Radarr. It manages and downloads subtitles based on your requirements. You define your preferences by TV show or movie and Bazarr takes care of everything for you.
   copyright:
     - license: GPL-3.0-only
@@ -29,7 +29,7 @@ environment:
 pipeline:
   - uses: git-checkout
     with:
-      expected-commit: 97e012c7471c6948c7b1c59a0d11b6bef9f76de3
+      expected-commit: 8a39c60d2875615d9abaeb96e5b48e33790be9a2
       repository: https://github.com/morpheus65535/bazarr
       tag: v${{vars.mangled-package-version}}
   - uses: patch
