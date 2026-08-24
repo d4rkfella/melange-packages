@@ -1,6 +1,6 @@
 package:
   name: radarr
-  version: "6.4.1.10545"
+  version: "6.4.2.10590"
   epoch: 0
   description: Movie download automation for usenet and torrents.
   copyright:
@@ -24,7 +24,7 @@ environment:
 pipeline:
   - uses: git-checkout
     with:
-      expected-commit: 15369ed5c359c9704783d243ce2b55e59a40a3a3
+      expected-commit: 2c24d9b4aafd00dedea4505119060c242c0963be
       repository: https://github.com/Radarr/Radarr
       tag: v${{package.version}}
   - name: Install dependancies
@@ -39,8 +39,8 @@ pipeline:
         runtime_arch="x64"
       fi
 
-      PATH="$HOME/.volta/bin:$HOME/.dotnet:$PATH"      
-      
+      PATH="$HOME/.volta/bin:$HOME/.dotnet:$PATH"
+
       export BROWSERSLIST_IGNORE_OLD_DATA=true
 
       yarn install --frozen-lockfile --network-timeout 120000
