@@ -17,10 +17,11 @@ permissions:
   attestations: write
 
 jobs:
-  setup-build-matrix:
+  prepare:
     runs-on: ubuntu-24.04
     outputs:
       packages: ${{ steps.set-packages.outputs.packages }}
+      cache-key: ${{ steps.cache-key.outputs.key }}
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
@@ -51,10 +52,13 @@ jobs:
               echo "packages=$FILES" >> "$GITHUB_OUTPUT"
             fi
           fi
+      - name: Compute cache key
+        id: cache-key
+        run: echo "key=$(date -u +'%G-%V')" >> "$GITHUB_OUTPUT"
 
   setup-build-enviroment:
-    needs: setup-build-matrix
-    if: ${{ needs.setup-build-matrix.outputs.packages != '[]' }}
+    needs: prepare
+    if: ${{ needs.prepare.outputs.packages != '[]' }}
     strategy:
       matrix:
         arch: [x86_64, aarch64]
@@ -62,13 +66,14 @@ jobs:
     uses: ./.github/workflows/melange-build-setup.yaml
     with:
       arch: ${{ matrix.arch }}
+      cache-key: ${{ needs.prepare.outputs.cache-key }}
 
   build:
-    needs: [setup-build-matrix,setup-build-enviroment]
-    if: ${{ needs.setup-build-matrix.outputs.packages != '[]' }}
+    needs: [prepare,setup-build-enviroment]
+    if: ${{ needs.prepare.outputs.packages != '[]' }}
     strategy:
       matrix:
-        packages: ${{ fromJSON(needs.setup-build-matrix.outputs.packages) }}
+        packages: ${{ fromJSON(needs.prepare.outputs.packages) }}
         arch: [x86_64, aarch64]
       max-parallel: 4
       fail-fast: false
