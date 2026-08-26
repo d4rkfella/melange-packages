@@ -1,14 +1,14 @@
 package:
   name: qui
   version: "1.27.0"
-  epoch: 0
+  epoch: 1
   description: "A fast, single-binary qBittorrent web UI: manage multiple instances, automate torrent workflows, and cross-seed across trackers."
   copyright:
     - license: GPL-2.0-or-later
 environment:
   contents:
     packages:
-      - nodejs-22
+      - nodejs-24
       - pnpm
 pipeline:
   - uses: git-checkout
