@@ -6,7 +6,12 @@ on:
       arch:
         required: true
         type: string
-
+      cache-key:
+        required: true
+        type: string
+concurrency:
+  group: melange-build-tools-${{ inputs.arch }}-${{ inputs.cache-key }}
+  cancel-in-progress: false
 jobs:
   setup:
     runs-on: ${{ inputs.arch == 'x86_64' && 'ubuntu-24.04' || 'ubuntu-24.04-arm' }}
@@ -15,16 +20,12 @@ jobs:
         uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
         with:
           egress-policy: audit
-      
-      - name: Set Cache Key
-        id: cache
-        run: echo "key=$(date -u +'%G-%V')" >> $GITHUB_OUTPUT
-
+  
       - name: Check cache
         id: cache-restore
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          key: build-dependencies-${{ inputs.arch }}-${{ steps.cache.outputs.key }}
+          key: build-dependencies-${{ inputs.arch }}-${{ inputs.cache-key }}
           path: |
             /usr/local/bin/bwrap
             /usr/local/bin/melange
@@ -74,7 +75,7 @@ jobs:
         if: ${{ steps.cache-restore.outputs.cache-hit != 'true' }}
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          key: build-dependencies-${{ inputs.arch }}-${{ steps.cache.outputs.key }}
+          key: build-dependencies-${{ inputs.arch }}-${{ inputs.cache-key }}
           path: |
             /usr/local/bin/bwrap
             /usr/local/bin/melange
