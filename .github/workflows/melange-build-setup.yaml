@@ -1,17 +1,25 @@
-
 name: Setup Melange Build Environment
+
 on:
   workflow_call:
     inputs:
       arch:
         required: true
         type: string
-      cache-key:
+      yq-version:
         required: true
         type: string
+      bwrap-version:
+        required: true
+        type: string
+      melange-version:
+        required: true
+        type: string
+
 concurrency:
-  group: melange-build-tools-${{ inputs.arch }}-${{ inputs.cache-key }}
+  group: tools-${{ inputs.arch }}-yq-${{ inputs.yq-version }}-bwrap-${{ inputs.bwrap-version }}-melange-${{ inputs.melange-version }}
   cancel-in-progress: false
+
 jobs:
   setup:
     runs-on: ${{ inputs.arch == 'x86_64' && 'ubuntu-24.04' || 'ubuntu-24.04-arm' }}
@@ -20,12 +28,12 @@ jobs:
         uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
         with:
           egress-policy: audit
-  
+
       - name: Check cache
         id: cache-restore
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          key: build-dependencies-${{ inputs.arch }}-${{ inputs.cache-key }}
+          key: tools-${{ inputs.arch }}-yq-${{ inputs.yq-version }}-bwrap-${{ inputs.bwrap-version }}-melange-${{ inputs.melange-version }}
           path: |
             /usr/local/bin/bwrap
             /usr/local/bin/melange
@@ -42,7 +50,7 @@ jobs:
       - name: Build yq
         if: ${{ steps.cache-restore.outputs.cache-hit != 'true' }}
         run: |
-          git clone https://github.com/mikefarah/yq
+          git clone --branch ${{ inputs.yq-version }} --depth 1 https://github.com/mikefarah/yq
           cd yq
           go build -o /usr/local/bin/yq yq.go
           cd ..
@@ -53,7 +61,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y libcap-dev meson ninja-build pkg-config
-          git clone https://github.com/containers/bubblewrap
+          git clone --branch ${{ inputs.bwrap-version }} --depth 1 https://github.com/containers/bubblewrap
           cd bubblewrap
           meson setup --prefix=/usr/local . output
           cd output
@@ -65,7 +73,7 @@ jobs:
       - name: Build melange
         if: ${{ steps.cache-restore.outputs.cache-hit != 'true' }}
         run: |
-          git clone https://github.com/chainguard-dev/melange
+          git clone --branch ${{ inputs.melange-version }} --depth 1 https://github.com/chainguard-dev/melange
           cd melange
           go build -o /usr/local/bin/melange .
           cd ..
@@ -75,7 +83,7 @@ jobs:
         if: ${{ steps.cache-restore.outputs.cache-hit != 'true' }}
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          key: build-dependencies-${{ inputs.arch }}-${{ inputs.cache-key }}
+          key: tools-${{ inputs.arch }}-yq-${{ inputs.yq-version }}-bwrap-${{ inputs.bwrap-version }}-melange-${{ inputs.melange-version }}
           path: |
             /usr/local/bin/bwrap
             /usr/local/bin/melange
