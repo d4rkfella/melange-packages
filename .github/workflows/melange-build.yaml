@@ -16,12 +16,25 @@ permissions:
   id-token: write
   attestations: write
 
+env:
+  YQ_VERSION: v4.53.6 # renovate: datasource=github-releases depName=mikefarah/yq
+  BWRAP_VERSION: v0.12.0 # renovate: datasource=github-releases depName=containers/bubblewrap
+  MELANGE_VERSION: v0.59.2 # renovate: datasource=github-releases depName=chainguard-dev/melange
+
 jobs:
-  prepare:
+  versions:
+    runs-on: ubuntu-24.04
+    outputs:
+      key: ${{ steps.expose.outputs.key }}
+    steps:
+      - name: Expose combined tool-version key
+        id: expose
+        run: echo "key=yq-$YQ_VERSION-bwrap-$BWRAP_VERSION-melange-$MELANGE_VERSION" >> "$GITHUB_OUTPUT"
+
+  setup-build-matrix:
     runs-on: ubuntu-24.04
     outputs:
       packages: ${{ steps.set-packages.outputs.packages }}
-      cache-key: ${{ steps.cache-key.outputs.key }}
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
@@ -52,28 +65,90 @@ jobs:
               echo "packages=$FILES" >> "$GITHUB_OUTPUT"
             fi
           fi
-      - name: Compute cache key
-        id: cache-key
-        run: echo "key=$(date -u +'%G-%V')" >> "$GITHUB_OUTPUT"
 
   setup-build-enviroment:
-    needs: prepare
-    if: ${{ needs.prepare.outputs.packages != '[]' }}
+    needs: [setup-build-matrix, versions]
+    if: ${{ needs.setup-build-matrix.outputs.packages != '[]' }}
     strategy:
       matrix:
         arch: [x86_64, aarch64]
       max-parallel: 2
-    uses: ./.github/workflows/melange-build-setup.yaml
-    with:
-      arch: ${{ matrix.arch }}
-      cache-key: ${{ needs.prepare.outputs.cache-key }}
+    runs-on: ${{ matrix.arch == 'x86_64' && 'ubuntu-24.04' || 'ubuntu-24.04-arm' }}
+    concurrency:
+      group: tools-${{ matrix.arch }}-${{ needs.versions.outputs.key }}
+      cancel-in-progress: false
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: audit
+
+      - name: Check cache
+        id: cache-restore
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          key: tools-${{ matrix.arch }}-yq-${{ env.YQ_VERSION }}-bwrap-${{ env.BWRAP_VERSION }}-melange-${{ env.MELANGE_VERSION }}
+          path: |
+            /usr/local/bin/bwrap
+            /usr/local/bin/melange
+            /usr/local/bin/yq
+          lookup-only: true
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        if: ${{ steps.cache-restore.outputs.cache-hit != 'true' }}
+        with:
+          go-version: '1.27'
+          cache: false
+          check-latest: true
+
+      - name: Build yq
+        if: ${{ steps.cache-restore.outputs.cache-hit != 'true' }}
+        run: |
+          git clone --branch ${{ env.YQ_VERSION }} --depth 1 https://github.com/mikefarah/yq
+          cd yq
+          go build -o /usr/local/bin/yq yq.go
+          cd ..
+          rm -rf yq
+
+      - name: Build bubblewrap
+        if: ${{ steps.cache-restore.outputs.cache-hit != 'true' }}
+        run: |
+          sudo apt update
+          sudo apt install -y libcap-dev meson ninja-build pkg-config
+          git clone --branch ${{ env.BWRAP_VERSION }} --depth 1 https://github.com/containers/bubblewrap
+          cd bubblewrap
+          meson setup --prefix=/usr/local . output
+          cd output
+          ninja
+          sudo ninja install
+          cd ../..
+          rm -rf bubblewrap
+
+      - name: Build melange
+        if: ${{ steps.cache-restore.outputs.cache-hit != 'true' }}
+        run: |
+          git clone --branch ${{ env.MELANGE_VERSION }} --depth 1 https://github.com/chainguard-dev/melange
+          cd melange
+          go build -o /usr/local/bin/melange .
+          cd ..
+          rm -rf melange
+
+      - name: Save to cache
+        if: ${{ steps.cache-restore.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          key: tools-${{ matrix.arch }}-yq-${{ env.YQ_VERSION }}-bwrap-${{ env.BWRAP_VERSION }}-melange-${{ env.MELANGE_VERSION }}
+          path: |
+            /usr/local/bin/bwrap
+            /usr/local/bin/melange
+            /usr/local/bin/yq
 
   build:
-    needs: [prepare,setup-build-enviroment]
-    if: ${{ needs.prepare.outputs.packages != '[]' }}
+    needs: [setup-build-matrix, setup-build-enviroment]
+    if: ${{ needs.setup-build-matrix.outputs.packages != '[]' }}
     strategy:
       matrix:
-        packages: ${{ fromJSON(needs.prepare.outputs.packages) }}
+        packages: ${{ fromJSON(needs.setup-build-matrix.outputs.packages) }}
         arch: [x86_64, aarch64]
       max-parallel: 4
       fail-fast: false
@@ -84,15 +159,11 @@ jobs:
         uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
         with:
           egress-policy: audit
-      
-      - name: Set Cache Key
-        id: cache
-        run: echo "key=$(date -u +'%G-%V')" >> $GITHUB_OUTPUT
 
       - name: Restore cached build tools
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          key: build-dependencies-${{ matrix.arch }}-${{ steps.cache.outputs.key }}
+          key: tools-${{ matrix.arch }}-yq-${{ env.YQ_VERSION }}-bwrap-${{ env.BWRAP_VERSION }}-melange-${{ env.MELANGE_VERSION }}
           fail-on-cache-miss: true
           path: |
             /usr/local/bin/bwrap
