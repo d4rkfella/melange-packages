@@ -47,10 +47,9 @@ jobs:
       - name: Get Changed Files
         if: ${{ github.event_name == 'push' }}
         id: changed-files
-        uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # 47.0.6
+        uses: bjw-s-labs/action-changed-files@a9a36fb08ce06db9b02fbd8026cc2c0945eb9841 # v0.6.0
         with:
-          files: src/packages/**/melange.yaml
-          matrix: true
+          patterns: src/packages/**/melange.yaml
 
       - name: Set packages matrix output
         id: set-packages
@@ -58,7 +57,7 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "packages=[\"src/packages/${{ github.event.inputs.package }}/melange.yaml\"]" >> "$GITHUB_OUTPUT"
           else
-            FILES='${{ steps.changed-files.outputs.all_changed_files }}'
+            FILES='${{ steps.changed-files.outputs.changed_files }}'
             if [ -z "$FILES" ]; then
               echo "packages=[]" >> "$GITHUB_OUTPUT"
             else
