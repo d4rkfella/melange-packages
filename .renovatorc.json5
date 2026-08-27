@@ -1,0 +1,16 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Bump pinned yq/bubblewrap/melange versions used by the melange build workflow",
+      "managerFilePatterns": ["/^\\.github/workflows/melange-build\\.ya?ml$/"],
+      "matchStrings": [
+        "(?<currentValue>v[0-9.]+)\\s*#\\s*renovate:\\s*datasource=(?<datasource>[a-zA-Z-]+)\\s+depName=(?<depName>\\S+)"
+      ]
+    }
+  ]
+}
