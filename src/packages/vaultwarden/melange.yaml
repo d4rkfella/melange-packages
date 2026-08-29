@@ -1,17 +1,15 @@
 package:
   name: vaultwarden
   version: "1.37.2"
-  epoch: 0
+  epoch: 1
   description: "Unofficial Bitwarden compatible server written in Rust (glibc)"
   copyright:
     - license: GPL-3.0-or-later
   dependencies:
     runtime:
-      - wolfi-base
-      - ca-certificates
-      - openssl
+      - libssl3
       - libpq-18
-      - curl
+
 environment:
   environment:
     FEATURES: "postgresql"
@@ -33,6 +31,7 @@ environment:
       - npm
       - python-3.14
       - yq
+
 pipeline:
   - uses: git-checkout
     with:
@@ -40,6 +39,7 @@ pipeline:
       tag: ${{package.version}}
       expected-commit: 46d71107f5094460dd5ecbe1dbac6e6c71e5189a
       destination: vaultwarden
+
   - name: build-vaultwarden
     working-directory: /home/build/vaultwarden
     runs: |
@@ -48,10 +48,12 @@ pipeline:
         --release \
         --target ${{build.arch}}-unknown-linux-gnu \
         --bin vaultwarden
+
   - uses: git-checkout
     with:
       repository: https://github.com/dani-garcia/bw_web_builds
       destination: bw_web_builds
+
   - name: build-web-vault
     working-directory: /home/build/bw_web_builds
     runs: |
@@ -70,6 +72,7 @@ pipeline:
       npm run dist:oss:selfhost
       cd build
       printf '{"version":"%s"}\n' "${WEB_VAULT_TAG}" > vw-version.json
+
   - name: prepare-package
     runs: |
       mkdir -p ${{targets.destdir}}/usr/bin
@@ -77,6 +80,86 @@ pipeline:
       cp /home/build/vaultwarden/target/${{build.arch}}-unknown-linux-gnu/release/vaultwarden ${{targets.destdir}}/usr/bin/vaultwarden
       install -m555 -D start.sh ${{targets.destdir}}/usr/bin/start.sh
       cp -r /home/build/bw_web_builds/web-vault/apps/web/build/* ${{targets.destdir}}/usr/lib/vw_web_vault
+
+test:
+  environment:
+    contents:
+      packages:
+        - curl
+        - bash
+        - jq
+        - xmlstarlet
+        - postgresql-18
+        - postgresql-18-client
+        - su-exec
+  pipeline:
+    - name: Check for missing dependancies
+      uses: test/tw/ldd-check
+      with:
+        packages: ${{package.name}}
+
+    - name: Verify vaultwarden binary and web vault assets
+      runs: |
+        set -eux
+
+        test -x /usr/bin/vaultwarden
+        /usr/bin/vaultwarden --version
+
+        test -f /usr/lib/vw_web_vault/index.html
+        test -f /usr/lib/vw_web_vault/vw-version.json
+        jq -e '.version' /usr/lib/vw_web_vault/vw-version.json
+
+    - name: Start Postgres + vaultwarden and verify HTTP response
+      runs: |
+        set -eux
+
+        export PGDATA=/tmp/pgdata
+        install -d -o postgres -g postgres "${PGDATA}"
+
+        su-exec postgres initdb -D "${PGDATA}" -U postgres --auth=trust
+        su-exec postgres pg_ctl -D "${PGDATA}" \
+          -o "-k /tmp -h 127.0.0.1 -p 5432" \
+          -l /tmp/postgres.log -w start
+
+        su-exec postgres psql -h 127.0.0.1 -p 5432 -U postgres \
+          -c "CREATE ROLE vaultwarden WITH LOGIN PASSWORD 'vaultwarden' SUPERUSER;"
+        su-exec postgres createdb -h 127.0.0.1 -p 5432 -U postgres -O vaultwarden vaultwarden
+
+        export DATA_FOLDER=/tmp/vw-data
+        export DATABASE_URL="postgresql://vaultwarden:vaultwarden@127.0.0.1:5432/vaultwarden"
+        export WEB_VAULT_FOLDER=/usr/lib/vw_web_vault
+        export ROCKET_ADDRESS=127.0.0.1
+        export ROCKET_PORT=8000
+        export ADMIN_TOKEN=test-admin-token
+        mkdir -p "${DATA_FOLDER}"
+
+        /usr/bin/vaultwarden > /tmp/vaultwarden.log 2>&1 &
+        VW_PID=$!
+        trap 'kill "${VW_PID}" 2>/dev/null || true; su-exec postgres pg_ctl -D "${PGDATA}" -m fast stop || true' EXIT
+
+        up=0
+        for i in $(seq 1 30); do
+          if curl -fsS "http://127.0.0.1:8000/alive" > /tmp/alive.out 2>/dev/null; then
+            up=1
+            break
+          fi
+          sleep 1
+        done
+
+        if [ "${up}" -ne 1 ]; then
+          echo "vaultwarden never became healthy" >&2
+          cat /tmp/vaultwarden.log >&2
+          exit 1
+        fi
+
+        cat /tmp/alive.out
+
+        curl -fsS "http://127.0.0.1:8000/api/config" | tee /tmp/config.json
+        jq -e '.version != null' /tmp/config.json
+        jq -e '.server.name == "Vaultwarden"' /tmp/config.json
+
+        curl -fsS -o /dev/null -w '%{http_code}' "http://127.0.0.1:8000/" | grep -q '^200$'
+
 update:
   enabled: true
   github:
