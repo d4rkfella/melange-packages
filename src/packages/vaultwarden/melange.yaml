@@ -85,6 +85,7 @@ test:
   environment:
     contents:
       packages:
+        - busybox
         - curl
         - bash
         - jq
@@ -112,6 +113,10 @@ test:
     - name: Start Postgres + vaultwarden and verify HTTP response
       runs: |
         set -eux
+
+        getent group postgres >/dev/null 2>&1 || addgroup -S postgres
+        getent passwd postgres >/dev/null 2>&1 || \
+          adduser -S -D -H -h /tmp/pgdata -s /bin/sh -G postgres postgres
 
         export PGDATA=/tmp/pgdata
         install -d -o postgres -g postgres "${PGDATA}"
