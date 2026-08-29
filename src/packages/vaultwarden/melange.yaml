@@ -85,14 +85,13 @@ test:
   environment:
     contents:
       packages:
-        - busybox
         - curl
         - bash
         - jq
         - xmlstarlet
         - postgresql-18
         - postgresql-18-client
-        - su-exec
+        - sudo
   pipeline:
     - name: Check for missing dependancies
       uses: test/tw/ldd-check
@@ -114,24 +113,14 @@ test:
       runs: |
         set -eux
 
-        getent group postgres >/dev/null 2>&1 || addgroup -S postgres
-        getent passwd postgres >/dev/null 2>&1 || \
-          adduser -S -D -H -h /tmp/pgdata -s /bin/sh -G postgres postgres
-
-        export PGDATA=/tmp/pgdata
-        install -d -o postgres -g postgres "${PGDATA}"
-
-        su-exec postgres initdb -D "${PGDATA}" -U postgres --auth=trust
-        su-exec postgres pg_ctl -D "${PGDATA}" \
-          -o "-k /tmp -h 127.0.0.1 -p 5432" \
-          -l /tmp/postgres.log -w start
-
-        su-exec postgres psql -h 127.0.0.1 -p 5432 -U postgres \
-          -c "CREATE ROLE vaultwarden WITH LOGIN PASSWORD 'vaultwarden' SUPERUSER;"
-        su-exec postgres createdb -h 127.0.0.1 -p 5432 -U postgres -O vaultwarden vaultwarden
+        useradd pgtest
+        sudo -u pgtest initdb -D /tmp/pgdata
+        sudo -u pgtest pg_ctl -D /tmp/pgdata -o "-k /tmp -h 127.0.0.1 -p 5432" -l /tmp/postgres.log start
+        sudo -u pgtest createuser -h 127.0.0.1 -p 5432 vaultwarden --superuser
+        sudo -u pgtest createdb -h 127.0.0.1 -p 5432 -O vaultwarden vaultwarden
 
         export DATA_FOLDER=/tmp/vw-data
-        export DATABASE_URL="postgresql://vaultwarden:vaultwarden@127.0.0.1:5432/vaultwarden"
+        export DATABASE_URL="postgresql://vaultwarden@127.0.0.1:5432/vaultwarden"
         export WEB_VAULT_FOLDER=/usr/lib/vw_web_vault
         export ROCKET_ADDRESS=127.0.0.1
         export ROCKET_PORT=8000
@@ -140,7 +129,7 @@ test:
 
         /usr/bin/vaultwarden > /tmp/vaultwarden.log 2>&1 &
         VW_PID=$!
-        trap 'kill "${VW_PID}" 2>/dev/null || true; su-exec postgres pg_ctl -D "${PGDATA}" -m fast stop || true' EXIT
+        trap 'kill "${VW_PID}" 2>/dev/null || true; sudo -u pgtest pg_ctl -D /tmp/pgdata -m fast stop || true' EXIT
 
         up=0
         for i in $(seq 1 30); do
@@ -158,11 +147,9 @@ test:
         fi
 
         cat /tmp/alive.out
-
         curl -fsS "http://127.0.0.1:8000/api/config" | tee /tmp/config.json
         jq -e '.version != null' /tmp/config.json
         jq -e '.server.name == "Vaultwarden"' /tmp/config.json
-
         curl -fsS -o /dev/null -w '%{http_code}' "http://127.0.0.1:8000/" | grep -q '^200$'
 
 update:
