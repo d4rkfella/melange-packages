@@ -92,6 +92,7 @@ test:
         - postgresql-18
         - postgresql-18-client
         - sudo
+        - shadow
   pipeline:
     - name: Check for missing dependancies
       uses: test/tw/ldd-check
