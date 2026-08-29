@@ -91,7 +91,7 @@ test:
         - xmlstarlet
         - postgresql-18
         - postgresql-18-client
-        - sudo
+        - sudo-rs
         - shadow
   pipeline:
     - name: Check for missing dependancies
