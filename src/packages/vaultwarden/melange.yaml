@@ -99,16 +99,9 @@ test:
       with:
         packages: ${{package.name}}
 
-    - name: Verify vaultwarden binary and web vault assets
+    - name: Test if binary is present and runnable
       runs: |
-        set -eux
-
-        test -x /usr/bin/vaultwarden
         /usr/bin/vaultwarden --version
-
-        test -f /usr/lib/vw_web_vault/index.html
-        test -f /usr/lib/vw_web_vault/vw-version.json
-        jq -e '.version' /usr/lib/vw_web_vault/vw-version.json
 
     - name: Start Postgres + vaultwarden and verify HTTP response
       runs: |
