@@ -21,8 +21,8 @@ environment:
     HUSKY: 0
   contents:
     packages:
-      - python-3.13
-      - py3.13-pip
+      - python-3.14
+      - py3.14-pip
       - nodejs
       - npm
       - node-gyp
