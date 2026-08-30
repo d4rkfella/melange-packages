@@ -104,9 +104,9 @@ jobs:
         if: ${{ steps.cache-restore.outputs.cache-hit != 'true' }}
         run: |
           git clone --branch ${{ env.YQ_VERSION }} --depth 1 https://github.com/mikefarah/yq
-          cd yq
+          pushd yq
           go build -o /usr/local/bin/yq yq.go
-          cd ..
+          popd
           rm -rf yq
 
       - name: Build bubblewrap
@@ -115,21 +115,22 @@ jobs:
           sudo apt update
           sudo apt install -y libcap-dev meson ninja-build pkg-config
           git clone --branch ${{ env.BWRAP_VERSION }} --depth 1 https://github.com/containers/bubblewrap
-          cd bubblewrap
+          pushd bubblewrap
           meson setup --prefix=/usr/local . output
-          cd output
+          pushd output
           ninja
           sudo ninja install
-          cd ../..
+          popd
+          popd
           rm -rf bubblewrap
 
       - name: Build melange
         if: ${{ steps.cache-restore.outputs.cache-hit != 'true' }}
         run: |
           git clone --branch ${{ env.MELANGE_VERSION }} --depth 1 https://github.com/chainguard-dev/melange
-          cd melange
+          pushd melange
           go build -o /usr/local/bin/melange .
-          cd ..
+          popd
           rm -rf melange
 
       - name: Save to cache
