@@ -18,16 +18,12 @@ environment:
     packages:
       - bash
       - build-base
-      - busybox
-      - ca-certificates-bundle
       - gcc-13-default
       - nodejs
       - openjdk-${{vars.java-version}}-default-jdk
       - pnpm
-      - npm
       - unzip
       - wolfi-base
-      - wolfi-baselayout
       - maven
       - node-gyp
   environment:
@@ -59,12 +55,12 @@ pipeline:
       done
   - uses: git-checkout
     with:
-      repository: https://github.com/d4rkfella/keycloak-custom-theme
-      tag: v0.3.6
-      expected-commit: e16f6692c006f6a54b6efda45fcabd5369a83e83
+      repository: https://github.com/cloakwise-io/keycloak-custom-theme
+      tag: v0.2.2
+      expected-commit: 1f0ce962cf027f3d4e9f4bbe4b4ba2036472345a
   - runs: |
-      npm install --legacy-peer-deps
-      npm run build-keycloak-theme
+      pnpm install
+      pnpm run build-keycloak-theme
       cp dist_keycloak/keycloak-theme-for-kc-all-other-versions.jar ${{targets.destdir}}/usr/share/java/keycloak/providers/keycloak-theme.jar
   - runs: |
       export KC_HEALTH_ENABLED=true
