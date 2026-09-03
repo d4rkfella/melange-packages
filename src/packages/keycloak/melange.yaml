@@ -21,6 +21,7 @@ environment:
       - gcc-13-default
       - nodejs
       - openjdk-${{vars.java-version}}-default-jdk
+      - npm
       - pnpm
       - unzip
       - wolfi-base
