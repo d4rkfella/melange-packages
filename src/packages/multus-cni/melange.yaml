@@ -6,10 +6,6 @@ package:
   copyright:
     - license: Apache-2.0
 
-vars:
-  ldflags: >-
-    -X 'gopkg.in/k8snetworkplumbingwg/multus-cni.v4/pkg/multus.version=${{package.version}}'
-
 environment:
   contents:
     packages:
@@ -27,49 +23,49 @@ pipeline:
   - uses: go/build
     with:
       packages: ./cmd/multus
-      ldflags: ${{vars.ldflags}}
+      ldflags: -X 'gopkg.in/k8snetworkplumbingwg/multus-cni.v4/pkg/multus.version=${{package.version}}'
       output: multus
 
   - uses: go/build
     with:
       packages: ./cmd/multus-daemon
-      ldflags: ${{vars.ldflags}}
+      ldflags: -X 'gopkg.in/k8snetworkplumbingwg/multus-cni.v4/pkg/multus.version=${{package.version}}'
       output: multus-daemon
 
   - uses: go/build
     with:
       packages: ./cmd/multus-shim
-      ldflags: ${{vars.ldflags}}
+      ldflags: -X 'gopkg.in/k8snetworkplumbingwg/multus-cni.v4/pkg/multus.version=${{package.version}}'
       output: multus-shim
 
   - uses: go/build
     with:
       packages: ./cmd/install_multus
-      ldflags: ${{vars.ldflags}}
+      ldflags: -X 'gopkg.in/k8snetworkplumbingwg/multus-cni.v4/pkg/multus.version=${{package.version}}'
       output: install_multus
 
   - uses: go/build
     with:
       packages: ./cmd/thin_entrypoint
-      ldflags: ${{vars.ldflags}}
+      ldflags: -X 'gopkg.in/k8snetworkplumbingwg/multus-cni.v4/pkg/multus.version=${{package.version}}'
       output: thin_entrypoint
 
   - uses: go/build
     with:
       packages: ./cmd/kubeconfig_generator
-      ldflags: ${{vars.ldflags}}
+      ldflags: -X 'gopkg.in/k8snetworkplumbingwg/multus-cni.v4/pkg/multus.version=${{package.version}}'
       output: kubeconfig_generator
 
   - uses: go/build
     with:
       packages: ./cmd/cert-approver
-      ldflags: ${{vars.ldflags}}
+      ldflags: -X 'gopkg.in/k8snetworkplumbingwg/multus-cni.v4/pkg/multus.version=${{package.version}}'
       output: cert-approver
 
   - uses: go/build
     with:
       packages: ./cmd/passthru-cni
-      ldflags: ${{vars.ldflags}}
+      ldflags: -X 'gopkg.in/k8snetworkplumbingwg/multus-cni.v4/pkg/multus.version=${{package.version}}'
       output: passthru
 
   - uses: strip
