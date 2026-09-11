@@ -1,14 +1,14 @@
 package:
   name: autobrr
   version: "1.86.0"
-  epoch: 0
+  epoch: 1
   description: "Autobrr download automation tool"
   copyright:
     - license: GPL-2.0-or-later
 environment:
   contents:
     packages:
-      - nodejs-22
+      - nodejs-24
       - pnpm
 pipeline:
   - uses: git-checkout
