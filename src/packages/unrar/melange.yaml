@@ -5,7 +5,7 @@ package:
   description: UnRAR - free utility for RAR archives
   copyright:
     - license: UnRAR
-      license-path: usr/share/licenses/unrar/LICENSE
+      license-path: license.txt
 environment:
   contents:
     packages:
