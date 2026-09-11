@@ -1,8 +1,11 @@
 package:
   name: unrar
   version: "7.3.1"
-  epoch: 0
+  epoch: 1
   description: UnRAR - free utility for RAR archives
+  copyright:
+    - license: UnRAR
+      license-path: /usr/share/licenses/unrar/LICENSE
 environment:
   contents:
     packages:
@@ -16,7 +19,9 @@ pipeline:
   - uses: autoconf/make
   - runs: |
       mkdir -p ${{targets.destdir}}/usr/bin
+      mkdir -p ${{targets.destdir}}/usr/share/licenses/unrar
       install -v -m755 unrar ${{targets.destdir}}/usr/bin
+      install -v -m644 license.txt ${{targets.destdir}}/usr/share/licenses/unrar/LICENSE
   - uses: strip
 test:
   pipeline:
