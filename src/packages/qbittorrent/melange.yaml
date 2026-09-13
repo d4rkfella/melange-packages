@@ -1,15 +1,15 @@
 package:
   name: qbittorrent
   version: "5.2.3.2014"
-  epoch: 0
+  epoch: 1
   description: The qbittorrent-nox-static project is a bash build script that compiles a static qbittorrent-nox binary using the latest available dependencies from their source.
   copyright:
     - license: Apache-2.0
 environment:
   contents:
     repositories:
-      - https://dl-cdn.alpinelinux.org/alpine/v3.23/main
-      - https://dl-cdn.alpinelinux.org/alpine/v3.23/community
+      - https://dl-cdn.alpinelinux.org/alpine/v3.24/main
+      - https://dl-cdn.alpinelinux.org/alpine/v3.24/community
     packages:
       - alpine-baselayout-data
       - alpine-release
