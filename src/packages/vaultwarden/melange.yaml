@@ -1,7 +1,7 @@
 package:
   name: vaultwarden
-  version: "1.37.2"
-  epoch: 2
+  version: "1.37.3"
+  epoch: 0
   description: "Unofficial Bitwarden compatible server written in Rust (glibc)"
   copyright:
     - license: GPL-3.0-or-later
@@ -9,7 +9,6 @@ package:
     runtime:
       - libssl3
       - libpq-18
-
 environment:
   environment:
     FEATURES: "postgresql"
@@ -31,15 +30,13 @@ environment:
       - npm-12
       - python-3.14
       - yq
-
 pipeline:
   - uses: git-checkout
     with:
       repository: https://github.com/dani-garcia/vaultwarden
       tag: ${{package.version}}
-      expected-commit: 46d71107f5094460dd5ecbe1dbac6e6c71e5189a
+      expected-commit: eb212e23fad88e6136723f43e5b73543fa7026d3
       destination: vaultwarden
-
   - name: build-vaultwarden
     working-directory: /home/build/vaultwarden
     runs: |
@@ -48,12 +45,10 @@ pipeline:
         --release \
         --target ${{build.arch}}-unknown-linux-gnu \
         --bin vaultwarden
-
   - uses: git-checkout
     with:
       repository: https://github.com/dani-garcia/bw_web_builds
       destination: bw_web_builds
-
   - name: build-web-vault
     working-directory: /home/build/bw_web_builds
     runs: |
@@ -72,7 +67,6 @@ pipeline:
       npm run dist:oss:selfhost
       cd build
       printf '{"version":"%s"}\n' "${WEB_VAULT_TAG}" > vw-version.json
-
   - name: prepare-package
     runs: |
       mkdir -p ${{targets.destdir}}/usr/bin
@@ -80,7 +74,6 @@ pipeline:
       cp /home/build/vaultwarden/target/${{build.arch}}-unknown-linux-gnu/release/vaultwarden ${{targets.destdir}}/usr/bin/vaultwarden
       install -m555 -D start.sh ${{targets.destdir}}/usr/bin/start.sh
       cp -r /home/build/bw_web_builds/web-vault/apps/web/build/* ${{targets.destdir}}/usr/lib/vw_web_vault
-
 test:
   environment:
     contents:
@@ -98,11 +91,9 @@ test:
       uses: test/tw/ldd-check
       with:
         packages: ${{package.name}}
-
     - name: Test if binary is present and runnable
       runs: |
         /usr/bin/vaultwarden --version
-
     - name: Start Postgres + vaultwarden and verify HTTP response
       runs: |
         set -eux
@@ -145,7 +136,6 @@ test:
         jq -e '.version != null' /tmp/config.json
         jq -e '.server.name == "Vaultwarden"' /tmp/config.json
         curl -fsS -o /dev/null -w '%{http_code}' "http://127.0.0.1:8000/" | grep -q '^200$'
-
 update:
   enabled: true
   github:
