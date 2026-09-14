@@ -43,7 +43,7 @@ pipeline:
       tag: ${{package.version}}
       expected-commit: eb212e23fad88e6136723f43e5b73543fa7026d3
       destination: vaultwarden
-  - name: "sudo vs runuser"
+  - name: "Test su user switch"
     runs: |
       set -eux
 
@@ -52,8 +52,11 @@ pipeline:
       echo "=== sudo ==="
       sudo -u wolfi id || true
 
-      echo "=== runuser ==="
-      runuser -u wolfi -- id
+      echo "=== su ==="
+      su -s /bin/sh wolfi -c 'id'
+
+      echo "=== su initdb ==="
+      su -s /bin/sh wolfi -c 'initdb --version'
   - name: build-vaultwarden
     working-directory: /home/build/vaultwarden
     runs: |
