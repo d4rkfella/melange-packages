@@ -7,9 +7,10 @@ package:
     - license: GPL-3.0-or-later
   dependencies:
     runtime:
+      - wolfi-baselayout
+      - busybox
       - libssl3
       - libpq-18
-      - wolfi-baselayout
 environment:
   environment:
     FEATURES: "postgresql"
