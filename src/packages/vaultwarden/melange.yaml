@@ -43,56 +43,27 @@ pipeline:
       tag: ${{package.version}}
       expected-commit: eb212e23fad88e6136723f43e5b73543fa7026d3
       destination: vaultwarden
-  - name: "Debug user/PAM environment"
+  - name: "Confirm sudo-rs locked-account behavior"
     runs: |
       set -eux
 
-      echo "===== ID ====="
-      id
-
-      echo "===== INSTALLED ====="
-      apk info -e shadow sudo-rs linux-pam postgresql-18 postgresql-18-client
-
-      echo "===== COMMANDS ====="
-      command -v useradd
-      command -v sudo
-      command -v initdb
-
-      echo "===== SUDO ====="
-      sudo --version
-
-      echo "===== BEFORE USERADD ====="
-      grep '^pgtest:' /etc/passwd || true
-      grep '^pgtest:' /etc/shadow || true
-      grep '^pgtest:' /etc/group || true
-
-      echo "===== USERADD ====="
       useradd pgtest
 
-      echo "===== AFTER USERADD ====="
+      echo "=== CREATED ACCOUNT ==="
       grep '^pgtest:' /etc/passwd
-      grep '^pgtest:' /etc/shadow || true
-      grep '^pgtest:' /etc/group || true
+      grep '^pgtest:' /etc/shadow
 
-      echo "===== NSS ====="
-      cat /etc/nsswitch.conf || true
+      echo "=== SUDO WITH LOCKED ACCOUNT ==="
+      sudo -u pgtest id || true
 
-      echo "===== PAM FILES ====="
-      find /etc/pam.d -maxdepth 1 -type f -print || true
+      echo "=== UNLOCK ACCOUNT ==="
+      passwd -d pgtest
 
-      echo "===== PAM SUDO CONFIG ====="
-      cat /etc/pam.d/sudo 2>/dev/null || true
-      cat /etc/pam.d/sudo-i 2>/dev/null || true
+      echo "=== ACCOUNT AFTER passwd -d ==="
+      grep '^pgtest:' /etc/shadow
 
-      echo "===== SUDO CONFIG ====="
-      cat /etc/sudoers 2>/dev/null || true
-      cat /etc/sudoers-rs 2>/dev/null || true
-
-      echo "===== DIRECT SUDO ====="
+      echo "=== SUDO AFTER PASSWORD CHANGE ==="
       sudo -u pgtest id
-
-      echo "===== INITDB ====="
-      sudo -u pgtest initdb -D /tmp/pgdata
   - name: build-vaultwarden
     working-directory: /home/build/vaultwarden
     runs: |
