@@ -46,24 +46,20 @@ pipeline:
   - name: "Confirm sudo-rs locked-account behavior"
     runs: |
       set -eux
+      echo "=== ENVIRONMENT ==="
+      id
+      sudo --version
+      grep -E '^(root|wolfi|testuser):' /etc/passwd || true
+      grep -E '^(root|wolfi|testuser):' /etc/shadow || true
 
-      useradd pgtest
+      echo "=== USERADD ==="
+      useradd wolfi
 
-      echo "=== CREATED ACCOUNT ==="
-      grep '^pgtest:' /etc/passwd
-      grep '^pgtest:' /etc/shadow
+      grep '^wolfi:' /etc/passwd
+      grep '^wolfi:' /etc/shadow
 
-      echo "=== SUDO WITH LOCKED ACCOUNT ==="
-      sudo -u pgtest id || true
-
-      echo "=== UNLOCK ACCOUNT ==="
-      passwd -d pgtest
-
-      echo "=== ACCOUNT AFTER passwd -d ==="
-      grep '^pgtest:' /etc/shadow
-
-      echo "=== SUDO AFTER PASSWORD CHANGE ==="
-      sudo -u pgtest id
+      echo "=== SUDO ==="
+      sudo -u wolfi id
   - name: build-vaultwarden
     working-directory: /home/build/vaultwarden
     runs: |
