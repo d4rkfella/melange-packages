@@ -43,23 +43,17 @@ pipeline:
       tag: ${{package.version}}
       expected-commit: eb212e23fad88e6136723f43e5b73543fa7026d3
       destination: vaultwarden
-  - name: "Confirm sudo-rs locked-account behavior"
+  - name: "sudo vs runuser"
     runs: |
       set -eux
-      echo "=== ENVIRONMENT ==="
-      id
-      sudo --version
-      grep -E '^(root|wolfi|testuser):' /etc/passwd || true
-      grep -E '^(root|wolfi|testuser):' /etc/shadow || true
 
-      echo "=== USERADD ==="
       useradd wolfi
 
-      grep '^wolfi:' /etc/passwd
-      grep '^wolfi:' /etc/shadow
+      echo "=== sudo ==="
+      sudo -u wolfi id || true
 
-      echo "=== SUDO ==="
-      sudo -u wolfi id
+      echo "=== runuser ==="
+      runuser -u wolfi -- id
   - name: build-vaultwarden
     working-directory: /home/build/vaultwarden
     runs: |
