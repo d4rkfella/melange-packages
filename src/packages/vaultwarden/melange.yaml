@@ -30,9 +30,6 @@ environment:
       - npm-12
       - python-3.14
       - yq
-capabilities:
-  add:
-    - CAP_AUDIT_WRITE
 pipeline:
   - uses: git-checkout
     with:
