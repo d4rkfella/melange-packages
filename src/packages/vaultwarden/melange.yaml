@@ -44,61 +44,61 @@ pipeline:
       expected-commit: eb212e23fad88e6136723f43e5b73543fa7026d3
       destination: vaultwarden
   - name: "Debug user/PAM environment"
-      runs: |
-        set -eux
+    runs: |
+      set -eux
 
-        echo "===== ID ====="
-        id
+      echo "===== ID ====="
+      id
 
-        echo "===== PACKAGES ====="
-        apk info -e shadow sudo-rs linux-pam util-linux
+      echo "===== PACKAGES ====="
+      apk info -e shadow sudo-rs linux-pam util-linux
 
-        echo "===== COMMANDS ====="
-        command -v useradd
-        command -v sudo
-        command -v getent
-        command -v runuser
-        command -v su
+      echo "===== COMMANDS ====="
+      command -v useradd
+      command -v sudo
+      command -v getent
+      command -v runuser
+      command -v su
 
-        echo "===== SUDO ====="
-        sudo --version
+      echo "===== SUDO ====="
+      sudo --version
 
-        echo "===== BEFORE USERADD ====="
-        grep '^pgtest:' /etc/passwd || true
-        grep '^pgtest:' /etc/shadow || true
-        grep '^pgtest:' /etc/group || true
+      echo "===== BEFORE USERADD ====="
+      grep '^pgtest:' /etc/passwd || true
+      grep '^pgtest:' /etc/shadow || true
+      grep '^pgtest:' /etc/group || true
 
-        echo "===== USERADD ====="
-        useradd pgtest
+      echo "===== USERADD ====="
+      useradd pgtest
 
-        echo "===== AFTER USERADD ====="
-        grep '^pgtest:' /etc/passwd
-        grep '^pgtest:' /etc/shadow || true
-        grep '^pgtest:' /etc/group || true
+      echo "===== AFTER USERADD ====="
+      grep '^pgtest:' /etc/passwd
+      grep '^pgtest:' /etc/shadow || true
+      grep '^pgtest:' /etc/group || true
 
-        echo "===== GETENT ====="
-        getent passwd pgtest
-        getent shadow pgtest || true
-        getent group pgtest
+      echo "===== GETENT ====="
+      getent passwd pgtest
+      getent shadow pgtest || true
+      getent group pgtest
 
-        echo "===== NSS ====="
-        cat /etc/nsswitch.conf
+      echo "===== NSS ====="
+      cat /etc/nsswitch.conf
 
-        echo "===== PAM FILES ====="
-        find /etc/pam.d -maxdepth 1 -type f -print -exec sh -c 'echo "----- $1"; cat "$1"' _ {} \;
+      echo "===== PAM FILES ====="
+      find /etc/pam.d -maxdepth 1 -type f -print -exec sh -c 'echo "----- $1"; cat "$1"' _ {} \;
 
-        echo "===== SUDO CONFIG ====="
-        find /etc -maxdepth 2 \( -name 'sudoers' -o -name 'sudoers-rs' \) \
-          -print -exec cat {} \;
+      echo "===== SUDO CONFIG ====="
+      find /etc -maxdepth 2 \( -name 'sudoers' -o -name 'sudoers-rs' \) \
+        -print -exec cat {} \;
 
-        echo "===== DIRECT USER SWITCH ====="
-        runuser -u pgtest -- id
+      echo "===== DIRECT USER SWITCH ====="
+      runuser -u pgtest -- id
 
-        echo "===== SUDO USER SWITCH ====="
-        sudo -u pgtest id
+      echo "===== SUDO USER SWITCH ====="
+      sudo -u pgtest id
 
-        echo "===== INITDB ====="
-        sudo -u pgtest initdb -D /tmp/pgdata
+      echo "===== INITDB ====="
+      sudo -u pgtest initdb -D /tmp/pgdata
   - name: build-vaultwarden
     working-directory: /home/build/vaultwarden
     runs: |
