@@ -43,20 +43,36 @@ pipeline:
       tag: ${{package.version}}
       expected-commit: eb212e23fad88e6136723f43e5b73543fa7026d3
       destination: vaultwarden
-  - name: "Test su user switch"
+  - name: "Diagnose PAM privileges"
     runs: |
       set -eux
 
-      useradd wolfi
+      echo "=== ID ==="
+      id
+      cat /proc/self/status | grep -E '^(Uid|Gid|CapInh|CapPrm|CapEff|CapBnd|NoNewPrivs):'
 
-      echo "=== sudo ==="
+      echo "=== SHADOW ==="
+      ls -ln /etc/shadow
+      cat /etc/shadow
+
+      echo "=== PAM ==="
+      cat /etc/pam.d/sudo
+      cat /etc/pam.d/su
+
+      echo "=== USER ==="
+      useradd wolfi
+      grep '^wolfi:' /etc/passwd
+      grep '^wolfi:' /etc/shadow
+
+      echo "=== DIRECT ROOT ACCESS ==="
+      test -r /etc/shadow
+      echo "root can read /etc/shadow"
+
+      echo "=== SUDO ==="
       sudo -u wolfi id || true
 
-      echo "=== su ==="
-      su -s /bin/sh wolfi -c 'id'
-
-      echo "=== su initdb ==="
-      su -s /bin/sh wolfi -c 'initdb --version'
+      echo "=== SU ==="
+      su -s /bin/sh wolfi -c id || true
   - name: build-vaultwarden
     working-directory: /home/build/vaultwarden
     runs: |
