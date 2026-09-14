@@ -30,9 +30,8 @@ environment:
       - npm-12
       - python-3.14
       - yq
-capabilities:
-  add:
-    - CAP_AUDIT_WRITE
+      - sudo-rs
+      - shadow
 pipeline:
   - uses: git-checkout
     with:
@@ -40,6 +39,22 @@ pipeline:
       tag: ${{package.version}}
       expected-commit: eb212e23fad88e6136723f43e5b73543fa7026d3
       destination: vaultwarden
+  - name: "Debug test environment"
+    runs: |
+      set -eux
+
+      id
+      cat /etc/os-release
+      command -v useradd
+      command -v sudo
+      sudo --version || true
+
+      useradd pgtest
+      getent passwd pgtest
+      getent shadow pgtest || true
+
+      sudo -u pgtest id
+      sudo -u pgtest initdb -D /tmp/pgdata
   - name: build-vaultwarden
     working-directory: /home/build/vaultwarden
     runs: |
