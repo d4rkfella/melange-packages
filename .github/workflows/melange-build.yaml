@@ -154,21 +154,29 @@ jobs:
       fail-fast: false
     runs-on: ${{ matrix.arch == 'x86_64' && 'ubuntu-24.04' || 'ubuntu-24.04-arm' }}
 
+    container:
+      image: cgr.dev/chainguard/melange:latest-dev
+      options: >-
+        --cap-add NET_ADMIN
+        --cap-add SYS_ADMIN
+        --security-opt seccomp=unconfined
+        --security-opt apparmor=unconfined
+
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 
-      - name: Restore cached build tools
-        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          key: tools-${{ matrix.arch }}-yq-${{ env.YQ_VERSION }}-bwrap-${{ env.BWRAP_VERSION }}-melange-${{ env.MELANGE_VERSION }}
-          fail-on-cache-miss: true
-          path: |
-            /usr/local/bin/bwrap
-            /usr/local/bin/melange
-            /usr/local/bin/yq
+      #- name: Restore cached build tools
+        #uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        #with:
+          #key: tools-${{ matrix.arch }}-yq-${{ env.YQ_VERSION }}-bwrap-${{ env.BWRAP_VERSION }}-melange-${{ env.MELANGE_VERSION }}
+          #fail-on-cache-miss: true
+          #path: |
+            #/usr/local/bin/bwrap
+            #/usr/local/bin/melange
+            #/usr/local/bin/yq
 
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
