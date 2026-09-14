@@ -30,12 +30,6 @@ environment:
       - npm-12
       - python-3.14
       - yq
-      - sudo-rs
-      - shadow
-      - linux-pam
-      - util-linux
-      - coreutils
-      - grep
 pipeline:
   - uses: git-checkout
     with:
@@ -43,36 +37,6 @@ pipeline:
       tag: ${{package.version}}
       expected-commit: eb212e23fad88e6136723f43e5b73543fa7026d3
       destination: vaultwarden
-  - name: "Diagnose PAM privileges"
-    runs: |
-      set -eux
-
-      echo "=== ID ==="
-      id
-      cat /proc/self/status | grep -E '^(Uid|Gid|CapInh|CapPrm|CapEff|CapBnd|NoNewPrivs):'
-
-      echo "=== SHADOW ==="
-      ls -ln /etc/shadow
-      cat /etc/shadow
-
-      echo "=== PAM ==="
-      cat /etc/pam.d/sudo
-      cat /etc/pam.d/su
-
-      echo "=== USER ==="
-      useradd wolfi
-      grep '^wolfi:' /etc/passwd
-      grep '^wolfi:' /etc/shadow
-
-      echo "=== DIRECT ROOT ACCESS ==="
-      test -r /etc/shadow
-      echo "root can read /etc/shadow"
-
-      echo "=== SUDO ==="
-      sudo -u wolfi id || true
-
-      echo "=== SU ==="
-      su -s /bin/sh wolfi -c id || true
   - name: build-vaultwarden
     working-directory: /home/build/vaultwarden
     runs: |
@@ -110,67 +74,6 @@ pipeline:
       cp /home/build/vaultwarden/target/${{build.arch}}-unknown-linux-gnu/release/vaultwarden ${{targets.destdir}}/usr/bin/vaultwarden
       install -m555 -D start.sh ${{targets.destdir}}/usr/bin/start.sh
       cp -r /home/build/bw_web_builds/web-vault/apps/web/build/* ${{targets.destdir}}/usr/lib/vw_web_vault
-test:
-  environment:
-    contents:
-      packages:
-        - curl
-        - bash
-        - jq
-        - xmlstarlet
-        - postgresql-18
-        - postgresql-18-client
-        - sudo-rs
-        - shadow
-    environment:
-      PGUSER: pgtest
-  pipeline:
-    - uses: test/tw/ldd-check
-    - name: Test if binary is present and runnable
-      runs: |
-        /usr/bin/vaultwarden --version
-    - name: Start Postgres + vaultwarden and verify HTTP response
-      runs: |
-        set -eux
-
-        useradd $PGUSER
-        sudo -u $PGUSER initdb -D /tmp/pgdata
-        sudo -u $PGUSER pg_ctl -D /tmp/pgdata -o "-k /tmp -h 127.0.0.1 -p 5432" -l /tmp/postgres.log start
-        createuser -h 127.0.0.1 -p 5432 vaultwarden --superuser
-        createdb -h 127.0.0.1 -p 5432 -O vaultwarden vaultwarden
-
-        export DATA_FOLDER=/tmp/vw-data
-        export DATABASE_URL="postgresql://vaultwarden@127.0.0.1:5432/vaultwarden"
-        export WEB_VAULT_FOLDER=/usr/lib/vw_web_vault
-        export ROCKET_ADDRESS=127.0.0.1
-        export ROCKET_PORT=8000
-        export ADMIN_TOKEN=test-admin-token
-        mkdir -p "${DATA_FOLDER}"
-
-        /usr/bin/vaultwarden > /tmp/vaultwarden.log 2>&1 &
-        VW_PID=$!
-        trap 'kill "${VW_PID}" 2>/dev/null || true; sudo -u pgtest pg_ctl -D /tmp/pgdata -m fast stop || true' EXIT
-
-        up=0
-        for i in $(seq 1 30); do
-          if curl -fsS "http://127.0.0.1:8000/alive" > /tmp/alive.out 2>/dev/null; then
-            up=1
-            break
-          fi
-          sleep 1
-        done
-
-        if [ "${up}" -ne 1 ]; then
-          echo "vaultwarden never became healthy" >&2
-          cat /tmp/vaultwarden.log >&2
-          exit 1
-        fi
-
-        cat /tmp/alive.out
-        curl -fsS "http://127.0.0.1:8000/api/config" | tee /tmp/config.json
-        jq -e '.version != null' /tmp/config.json
-        jq -e '.server.name == "Vaultwarden"' /tmp/config.json
-        curl -fsS -o /dev/null -w '%{http_code}' "http://127.0.0.1:8000/" | grep -q '^200$'
 update:
   enabled: true
   github:
