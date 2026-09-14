@@ -9,8 +9,7 @@ package:
     runtime:
       - libssl3
       - libpq-18
-      - wolfi-base
-      - ca-certificates
+      - wolfi-baselayout
 environment:
   environment:
     FEATURES: "postgresql"
