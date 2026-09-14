@@ -89,11 +89,10 @@ test:
         - postgresql-18-client
         - sudo-rs
         - shadow
+    environment:
+      PGUSER: pgtest
   pipeline:
-    - name: Check for missing dependancies
-      uses: test/tw/ldd-check
-      with:
-        packages: ${{package.name}}
+    - uses: test/tw/ldd-check
     - name: Test if binary is present and runnable
       runs: |
         /usr/bin/vaultwarden --version
@@ -101,11 +100,11 @@ test:
       runs: |
         set -eux
 
-        useradd pgtest
-        sudo -u pgtest initdb -D /tmp/pgdata
-        sudo -u pgtest pg_ctl -D /tmp/pgdata -o "-k /tmp -h 127.0.0.1 -p 5432" -l /tmp/postgres.log start
-        sudo -u pgtest createuser -h 127.0.0.1 -p 5432 vaultwarden --superuser
-        sudo -u pgtest createdb -h 127.0.0.1 -p 5432 -O vaultwarden vaultwarden
+        useradd $PGUSER
+        sudo -u $PGUSER initdb -D /tmp/pgdata
+        sudo -u $PGUSER pg_ctl -D /tmp/pgdata -o "-k /tmp -h 127.0.0.1 -p 5432" -l /tmp/postgres.log start
+        createuser -h 127.0.0.1 -p 5432 vaultwarden --superuser
+        createdb -h 127.0.0.1 -p 5432 -O vaultwarden vaultwarden
 
         export DATA_FOLDER=/tmp/vw-data
         export DATABASE_URL="postgresql://vaultwarden@127.0.0.1:5432/vaultwarden"
