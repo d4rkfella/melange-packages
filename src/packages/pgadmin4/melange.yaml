@@ -5,7 +5,6 @@ package:
   description: pgAdmin 4 - PostgreSQL Tools for the Web
   copyright:
     - license: PostgreSQL
-      license-path: LICENSE
   dependencies:
     runtime:
       - py${{vars.py-version}}-bcrypt
