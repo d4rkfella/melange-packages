@@ -1,10 +1,11 @@
 package:
   name: pgadmin4
   version: "9.18"
-  epoch: 0
+  epoch: 1
   description: pgAdmin 4 - PostgreSQL Tools for the Web
   copyright:
     - license: PostgreSQL
+      license-path: LICENSE
   dependencies:
     runtime:
       - py${{vars.py-version}}-bcrypt
@@ -62,8 +63,6 @@ pipeline:
       cd web
       export CPPFLAGS="-DPNG_ARM_NEON_OPT=0"
       corepack enable
-      yarn set version berry
-      yarn set version 4
       yarn install
       yarn run bundle
       rm -rf node_modules pgadmin/static/js/generated/.cache yarn.lock package.json .[^.]* babel.cfg webpack.* jest.config.js babel.*
@@ -73,7 +72,7 @@ pipeline:
       cp -r web/. "${{targets.destdir}}/usr/lib/pgadmin4/"
       cp -r docs/en_US/_build/html/. "${{targets.destdir}}/usr/lib/pgadmin4/docs/"
       cp pkg/docker/run_pgadmin.py "${{targets.destdir}}/usr/lib/pgadmin4/"
-      cp LICENSE "${{targets.destdir}}/usr/lib/pgadmin4/LICENSE"
+      install -Dm444 LICENSE "${{targets.destdir}}/usr/share/licenses/pgadmin4/LICENSE"
       find "${{targets.destdir}}" -type d -name '__pycache__' -exec rm -rf {} + || true
 update:
   enabled: true
@@ -89,5 +88,3 @@ test:
   pipeline:
     - name: Check for missing dependancies
       uses: test/tw/ldd-check
-      with:
-        packages: ${{package.name}}
