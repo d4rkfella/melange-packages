@@ -49,7 +49,7 @@ pipeline:
       mkdir -p ${{targets.destdir}}/usr/lib/pgadmin4
       python${{vars.py-version}} -m venv --system-site-packages --without-pip --copies ${{targets.destdir}}/usr/lib/pgadmin4/venv
       ${{targets.destdir}}/usr/lib/pgadmin4/venv/bin/python3 -m pip install --no-cache-dir -r requirements.txt
-      ${{targets.destdir}}/usr/lib/pgadmin4/venv/bin/python3 -m pip install --no-cache-dir gunicorn==26.2.2
+      ${{targets.destdir}}/usr/lib/pgadmin4/venv/bin/python3 -m pip install --no-cache-dir gunicorn==26.2.0
       ${{targets.destdir}}/usr/lib/pgadmin4/venv/bin/python3 -m pip install --no-cache-dir sphinx sphinxcontrib-youtube
   - name: build-docs
     runs: |
