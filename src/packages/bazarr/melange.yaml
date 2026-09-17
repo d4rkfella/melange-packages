@@ -1,7 +1,7 @@
 package:
   name: bazarr
   version: "1.6.2_beta0"
-  epoch: 1
+  epoch: 2
   description: Bazarr is a companion application to Sonarr and Radarr. It manages and downloads subtitles based on your requirements. You define your preferences by TV show or movie and Bazarr takes care of everything for you.
   copyright:
     - license: GPL-3.0
@@ -45,15 +45,14 @@ pipeline:
       set -euo pipefail
 
       APPDIR="${{targets.destdir}}/usr/lib/bazarr/app"
-      FILE_LIST="$(cat .github/files_to_copy)"
 
       mkdir -p "${APPDIR}"
+      
       python3 -m venv --without-pip --copies "${APPDIR}/venv"
-      sed -i '/lxml/ s/lxml>=4.3.0, <5.0.0/lxml>=5.0.0/' requirements.txt
 
       pip install --upgrade --no-cache-dir --prefix "${APPDIR}/venv" -r requirements.txt -r postgres-requirements.txt
 
-      git describe --abbrev=0 > VERSION
+      git describe --abbrev=0 > VERSION && install -m444 VERSION "${APPDIR}"
 
       while IFS= read -r f
       do
@@ -61,9 +60,7 @@ pipeline:
           cp -r --parents "$f" "$APPDIR"
       done < .github/files_to_copy
 
-      cp VERSION "${APPDIR}"
-
-      install -Dm644 LICENSE "${{targets.destdir}}/usr/share/licenses/bazarr/LICENSE"
+      install -Dm444 LICENSE "${{targets.destdir}}/usr/share/licenses/bazarr/LICENSE"
 
       printf "UpdateMethod=docker\nBranch=development\nPackageVersion=${{package.version}}\nPackageAuthor=d4rkfella" > ${{targets.destdir}}/usr/lib/bazarr/package_info
 test:
