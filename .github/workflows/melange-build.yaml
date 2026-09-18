@@ -23,7 +23,7 @@ env:
 
 jobs:
   versions:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       key: ${{ steps.expose.outputs.key }}
     steps:
@@ -32,7 +32,7 @@ jobs:
         run: echo "key=yq-$YQ_VERSION-bwrap-$BWRAP_VERSION-melange-$MELANGE_VERSION" >> "$GITHUB_OUTPUT"
 
   setup-build-matrix:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       packages: ${{ steps.set-packages.outputs.packages }}
     steps:
