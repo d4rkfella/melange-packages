@@ -83,6 +83,8 @@ update:
     strip-prefix: REL-
     tag-filter-prefix: REL-
     use-tag: true
+  ignore-regex-patterns:
+    - '^REL-[0-9]+_[0-9]+-.+$'
 test:
   pipeline:
     - name: Check for missing dependancies
