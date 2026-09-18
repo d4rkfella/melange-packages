@@ -28,7 +28,7 @@ jobs:
           private-key: ${{ secrets.BOT_APP_PRIVATE_KEY }}
 
       - name: Run Renovate
-        uses: docker://ghcr.io/d4rkfella/melange-renovator:v0.6.1@sha256:f96dff4d5f8944c463aec63f240e1610a694cf6efc92938afaea1b2588ed2023
+        uses: docker://ghcr.io/d4rkfella/melange-renovator:v0.6.2@sha256:e3f39f341d8721d9517fa7a9b69be79b62d7f4aa8acdb09cf5265f69a12bdc6b
         env:
           RENOVATE_AUTODISCOVER: true
           RENOVATE_AUTODISCOVER_FILTER: ${{ github.repository }}
