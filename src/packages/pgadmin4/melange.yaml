@@ -1,7 +1,7 @@
 package:
   name: pgadmin4
   version: "9.18"
-  epoch: 2
+  epoch: 3
   description: pgAdmin 4 - PostgreSQL Tools for the Web
   copyright:
     - license: PostgreSQL
@@ -71,6 +71,8 @@ pipeline:
       cp -r web/. "${{targets.destdir}}/usr/lib/pgadmin4/"
       cp -r docs/en_US/_build/html/. "${{targets.destdir}}/usr/lib/pgadmin4/docs/"
       cp pkg/docker/run_pgadmin.py "${{targets.destdir}}/usr/lib/pgadmin4/"
+      install -Dm444 config_distro.py "${{targets.destdir}}/usr/lib/pgadmin4/config_distro.py"
+      install -Dm444 gunicorn_config.py "${{targets.destdir}}/usr/lib/pgadmin4/gunicorn_config.py"
       install -Dm444 LICENSE "${{targets.destdir}}/usr/share/licenses/pgadmin4/LICENSE"
       find "${{targets.destdir}}" -type d -name '__pycache__' -exec rm -rf {} + || true
 update:
