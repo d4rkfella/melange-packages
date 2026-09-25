@@ -1,7 +1,7 @@
 package:
   name: autobrr
-  version: "1.86.0"
-  epoch: 1
+  version: "1.87.0"
+  epoch: 0
   description: "Autobrr download automation tool"
   copyright:
     - license: GPL-2.0-or-later
@@ -15,7 +15,7 @@ pipeline:
     with:
       repository: https://github.com/autobrr/autobrr
       tag: v${{package.version}}
-      expected-commit: 58418e65f9b26a75644b1f509f37080198f56f47
+      expected-commit: cd78a70bb21b027bd36bdf3c6212710bdc9dd125
   - working-directory: /home/build/web
     runs: |
       pnpm install --frozen-lockfile
