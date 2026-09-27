@@ -16,6 +16,29 @@ environment:
       - ca-certificates-bundle
       - apk-tools
       - bash
+      - autoconf
+      - automake
+      - cmake
+      - curl
+      - file
+      - fortify-headers
+      - graphviz
+      - libc-dev
+      - libtool
+      - linux-headers
+      - make
+      - ninja-build
+      - ninja-is-really-ninja
+      - patch
+      - perl
+      - pkgconf
+      - py3-numpy
+      - py3-numpy-dev
+      - python3
+      - python3-dev
+      - re2c
+      - ttf-freefont
+      - xz
   environment:
     REPRODUCIBLE: false
 var-transforms:
