@@ -19,6 +19,7 @@ environment:
       - autoconf
       - automake
       - cmake
+      - sudo
       - curl
       - file
       - fortify-headers
