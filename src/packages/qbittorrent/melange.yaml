@@ -6,6 +6,8 @@ package:
   copyright:
     - license: Apache-2.0
 environment:
+  accounts:
+    run-as: 0
   contents:
     repositories:
       - https://dl-cdn.alpinelinux.org/alpine/v3.24/main
