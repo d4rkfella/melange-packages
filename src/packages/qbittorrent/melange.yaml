@@ -20,6 +20,7 @@ environment:
       - automake
       - cmake
       - curl
+      - sudo
       - file
       - fortify-headers
       - graphviz
@@ -64,6 +65,9 @@ pipeline:
       printf '%s\n' "qbt_static_ish=no" >> env.custom
       printf '%s\n' "qbt_optimise=no" >> env.custom
   - runs: |
+      command -v sudo
+      sudo -n true
+      echo "sudo status=$?"
       export $(cat env.custom)
       /usr/bin/env bash ./qbt-nox-static.bash zlib
       /usr/bin/env bash ./qbt-nox-static.bash openssl
