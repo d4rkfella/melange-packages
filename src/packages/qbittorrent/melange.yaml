@@ -19,7 +19,6 @@ environment:
       - autoconf
       - automake
       - cmake
-      - sudo
       - curl
       - file
       - fortify-headers
@@ -66,7 +65,6 @@ pipeline:
       printf '%s\n' "qbt_optimise=no" >> env.custom
   - runs: |
       export $(cat env.custom)
-      /usr/bin/env bash ./qbt-nox-static.bash -bs-a
       /usr/bin/env bash ./qbt-nox-static.bash zlib
       /usr/bin/env bash ./qbt-nox-static.bash openssl
       /usr/bin/env bash ./qbt-nox-static.bash boost
