@@ -23,7 +23,6 @@ environment:
       - clang
       - rust
       - curl
-      - openssl-dev
       - postgresql-dev
       - zlib-dev
       - bash
