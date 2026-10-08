@@ -117,7 +117,7 @@ test:
 
         # Configuration
         EXPECTED_VERSION="${{package.version}}"
-        SERVER_PORT=7878
+        SERVER_PORT=8989
         STARTUP_TIMEOUT=60
 
         echo "Starting server (expecting version: ${EXPECTED_VERSION})..."
