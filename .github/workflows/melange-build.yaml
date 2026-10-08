@@ -152,7 +152,7 @@ jobs:
         arch: [x86_64, aarch64]
       max-parallel: 4
       fail-fast: false
-    runs-on: ${{ matrix.arch == 'x86_64' && 'ubuntu-24.04' || 'ubuntu-24.04-arm' }}
+    runs-on: ${{ matrix.arch == 'x86_64' && 'ubuntu-26.04' || 'ubuntu-26.04-arm' }}
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -199,3 +199,30 @@ jobs:
           keyring-append: https://packages.darkfellanetwork.com/artifactory/wolfi-os/melange.rsa.pub,https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
           tests-repository-append: https://packages.darkfellanetwork.com/artifactory/wolfi-os/latest/main,https://packages.wolfi.dev/os
           tests-keyring-append: https://packages.darkfellanetwork.com/artifactory/wolfi-os/melange.rsa.pub,https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
+
+  trigger-terraform:
+      name: Trigger Terraform CI
+      needs: [build]
+      if: ${{ needs.build.result == 'success' }}
+      runs-on: ubuntu-26.04
+  
+      permissions: {}
+  
+      steps:
+        - name: Generate GitHub App token
+          id: app-token
+          uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+          with:
+            client-id: ${{ vars.APP_CLIENT_ID }}
+            private-key: ${{ secrets.APP_PRIVATE_KEY }}
+            owner: d4rkfella
+            repositories: containers
+            permission-actions: write
+  
+        - name: Trigger Terraform CI
+          env:
+            GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          run: |
+            gh workflow run terraform-ci.yml \
+              --repo d4rkfella/containers \
+              --ref main
