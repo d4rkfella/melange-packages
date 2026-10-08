@@ -1,7 +1,7 @@
 package:
   name: pgadmin4
   version: "9.18"
-  epoch: 3
+  epoch: 4
   description: pgAdmin 4 - PostgreSQL Tools for the Web
   copyright:
     - license: PostgreSQL
@@ -21,8 +21,6 @@ var-transforms:
     to: mangled-package-version
 environment:
   environment:
-    LC_ALL: C.UTF-8
-    LANG: C.UTF-8
     REPRODUCIBLE: false
   contents:
     packages:
@@ -70,7 +68,7 @@ pipeline:
       mkdir -p "${{targets.destdir}}/usr/lib/pgadmin4/docs"
       cp -r web/. "${{targets.destdir}}/usr/lib/pgadmin4/"
       cp -r docs/en_US/_build/html/. "${{targets.destdir}}/usr/lib/pgadmin4/docs/"
-      cp pkg/docker/run_pgadmin.py "${{targets.destdir}}/usr/lib/pgadmin4/"
+      install -Dm444 run_pgadmin.py "${{targets.destdir}}/usr/lib/pgadmin4/"
       install -Dm444 config_distro.py "${{targets.destdir}}/usr/lib/pgadmin4/config_distro.py"
       install -Dm444 gunicorn_config.py "${{targets.destdir}}/usr/lib/pgadmin4/gunicorn_config.py"
       install -Dm444 LICENSE "${{targets.destdir}}/usr/share/licenses/pgadmin4/LICENSE"
@@ -88,6 +86,48 @@ update:
   ignore-regex-patterns:
     - '^REL-[0-9]+_[0-9]+-.+$'
 test:
+  environment:
+    environment:
+      PGADMIN_SETUP_EMAIL: "pgadmin4@localhost"
+      PGADMIN_SETUP_PASSWORD: "pgadmin4"
   pipeline:
     - name: Check for missing dependancies
       uses: test/tw/ldd-check
+
+    - name: Start pgAdmin server and verify /misc/ping API response
+      runs: |
+        set -eo pipefail
+
+        # Configuration
+        SERVER_PORT=8080
+        STARTUP_TIMEOUT=60
+
+        export PGADMIN_LISTEN_ADDRESS=127.0.0.1
+        export PGADMIN_LISTEN_PORT=$SERVER_PORT
+
+        echo "Starting pgAdmin server..."
+        /usr/lib/pgadmin4/venv/bin/gunicorn \
+          -c /usr/lib/pgadmin4/gunicorn_config.py \
+          run_pgadmin:app \
+          >/tmp/pgadmin4-server.log 2>&1 &
+
+        echo "Waiting for server readiness (max ${STARTUP_TIMEOUT}s)..."
+        timeout $STARTUP_TIMEOUT bash -c "
+            while ! curl -sSf http://localhost:$SERVER_PORT/misc/ping >/dev/null 2>&1; do
+                sleep 1
+            done
+        " || {
+            echo "❌ pgAdmin server failed to start within ${STARTUP_TIMEOUT}s" >&2
+            echo "=== Server logs ===" >&2
+            cat /tmp/pgadmin4-server.log >&2
+            exit 1
+        }
+
+        response=$(curl -sSf http://localhost:$SERVER_PORT/misc/ping)
+
+        [[ "$response" == "PING" ]] || {
+            echo "❌ Unexpected /misc/ping response (expected PING, got ${response})" >&2
+            exit 1
+        }
+
+        echo "✅ pgAdmin API check passed (/misc/ping -> ${response})"

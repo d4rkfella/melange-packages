@@ -1,7 +1,12 @@
 import os
-import gunicorn
 
-from config import JSON_LOGGER, CONSOLE_LOG_LEVEL, CONSOLE_LOG_FORMAT_JSON
+import gunicorn
+from config import (
+    CONSOLE_LOG_FORMAT_JSON,
+    CONSOLE_LOG_LEVEL,
+    JSON_LOGGER,
+    SESSION_EXPIRATION_TIME,
+)
 
 gunicorn.SERVER_SOFTWARE = "Python"
 
@@ -9,8 +14,7 @@ gunicorn.SERVER_SOFTWARE = "Python"
 # %({x-remote-user}o)s reads the X-Remote-User response header set by pgAdmin
 # for authenticated requests; unauthenticated requests log '-'.
 access_log_format = (
-    '%(h)s %(l)s %({x-remote-user}o)s %(t)s "%(r)s" %(s)s %(b)s '
-    '"%(f)s" "%(a)s"'
+    '%(h)s %(l)s %({x-remote-user}o)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
 )
 
 if JSON_LOGGER:
@@ -72,17 +76,13 @@ if os.environ.get("PGADMIN_ENABLE_TLS"):
         "/certs/server.cert",
     )
 
-workers = int(os.environ.get("GUNICORN_WORKERS", "1"))
+workers = 1
 threads = int(os.environ.get("GUNICORN_THREADS", "25"))
 
-timeout = int(os.environ.get("GUNICORN_TIMEOUT", "60"))
+timeout = SESSION_EXPIRATION_TIME * 60 * 60 * 24
 
-limit_request_line = int(
-    os.environ.get("GUNICORN_LIMIT_REQUEST_LINE", "8190")
-)
-limit_request_fields = int(
-    os.environ.get("GUNICORN_LIMIT_REQUEST_FIELDS", "100")
-)
+limit_request_line = int(os.environ.get("GUNICORN_LIMIT_REQUEST_LINE", "8190"))
+limit_request_fields = int(os.environ.get("GUNICORN_LIMIT_REQUEST_FIELDS", "100"))
 limit_request_field_size = int(
     os.environ.get("GUNICORN_LIMIT_REQUEST_FIELD_SIZE", "8190")
 )
