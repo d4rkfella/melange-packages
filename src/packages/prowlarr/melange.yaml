@@ -1,7 +1,7 @@
 package:
   name: prowlarr
   version: "2.6.5.5623"
-  epoch: 0
+  epoch: 1
   description: Prowlarr is an indexer manager/proxy built on the popular *arr .net/reactjs base stack to integrate with your various PVR apps. Prowlarr supports management of both Torrent Trackers and Usenet Indexers. It integrates seamlessly with Lidarr, Mylar3, Radarr, Readarr, and Sonarr offering complete management of your indexers with no per app Indexer setup required (we do it all).
   copyright:
     - license: GPL-3.0-only
@@ -12,6 +12,8 @@ package:
       - libssl3
       - zlib
 environment:
+  environment:
+    DOTNET_CLI_TELEMETRY_OPTOUT: 1
   contents:
     packages:
       - build-base
@@ -19,6 +21,7 @@ environment:
       - bash
       - curl
       - icu
+      - libssl3
 pipeline:
   - uses: git-checkout
     with:
@@ -110,9 +113,37 @@ test:
       uses: test/tw/ldd-check
       with:
         packages: ${{package.name}}
-    - name: Run test script
+    
+    - name: Start prowlarr server and verify version from /api/v1/system/status response
       runs: |
-        EXPECTED_VERSION="${{package.version}}" ./test.sh
+        set -eo pipefail
+        
+        # Configuration
+        EXPECTED_VERSION="${EXPECTED_VERSION}"
+        SERVER_PORT=9696
+        STARTUP_TIMEOUT=60
+    
+        echo "Starting server (expecting version: ${EXPECTED_VERSION})..."
+        Prowlarr --nobrowser --data=/config >/tmp/server.log 2>&1 &
+    
+        echo "Waiting for server readiness (max ${STARTUP_TIMEOUT}s)..."
+        timeout $STARTUP_TIMEOUT bash -c "
+            while ! curl -sSf http://localhost:$SERVER_PORT >/dev/null 2>&1; do
+                sleep 1
+            done
+        " || {
+            echo "❌ Server failed to start within ${STARTUP_TIMEOUT}s" >&2
+            echo "=== Server logs ===" >&2
+            cat /tmp/server.log >&2
+            exit 1
+        }
+        API_KEY=$(xmlstarlet sel -t -v "//ApiKey" /config/config.xml)
+        version=$(curl -sSf http://localhost:$SERVER_PORT/api/v1/system/status?apikey=$API_KEY | jq -r '.version')
+        [[ "$version" == "$EXPECTED_VERSION" ]] || {
+            echo "❌ Version mismatch (expected ${EXPECTED_VERSION}, got ${version})" >&2
+            exit 1
+        }
+        echo "✅ Version check passed (${version})"
 update:
   enabled: true
   enable-prerelease-tags: true
