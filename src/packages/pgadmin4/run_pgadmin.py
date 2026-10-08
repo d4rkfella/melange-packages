@@ -33,12 +33,12 @@ def external_config_db_exists():
 external_db_exists = external_config_db_exists()
 
 if not os.path.isfile("/var/lib/pgadmin/pgadmin4.db") and not external_db_exists:
-    email = os.environ.get("PGADMIN_DEFAULT_EMAIL")
-    password = os.environ.get("PGADMIN_DEFAULT_PASSWORD")
+    email = os.environ.get("PGADMIN_SETUP_EMAIL")
+    password = os.environ.get("PGADMIN_SETUP_PASSWORD")
 
     if not email or not password:
         raise RuntimeError(
-            "You need to define PGADMIN_DEFAULT_EMAIL and PGADMIN_DEFAULT_PASSWORD."
+            "You need to define PGADMIN_SETUP_EMAIL and PGADMIN_SETUP_PASSWORD."
         )
 
     check_email_deliverability = (
@@ -72,9 +72,6 @@ if not os.path.isfile("/var/lib/pgadmin/pgadmin4.db") and not external_db_exists
 
     if not validate_email(email, email_config):
         raise RuntimeError(f"'{email}' does not appear to be a valid email address.")
-
-    os.environ["PGADMIN_SETUP_EMAIL"] = email
-    os.environ["PGADMIN_SETUP_PASSWORD"] = password
 
 
 from pgAdmin4 import app
