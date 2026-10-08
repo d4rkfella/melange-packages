@@ -119,7 +119,7 @@ test:
         set -eo pipefail
 
         # Configuration
-        EXPECTED_VERSION="${EXPECTED_VERSION}"
+        EXPECTED_VERSION="${{package.version}}"
         SERVER_PORT=7878
         STARTUP_TIMEOUT=20
 
