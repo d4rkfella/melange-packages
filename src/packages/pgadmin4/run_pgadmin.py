@@ -1,6 +1,11 @@
 import ast
 import builtins
 import os
+import sys
+
+UTILS_DIR = "/usr/lib/pgadmin4/pgadmin/utils"
+if UTILS_DIR not in sys.path:
+    sys.path.insert(0, UTILS_DIR)
 
 from pgadmin.utils.check_external_config_db import check_external_config_db
 from pgadmin.utils.validation_utils import validate_email
