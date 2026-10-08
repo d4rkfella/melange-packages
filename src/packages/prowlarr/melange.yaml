@@ -119,10 +119,10 @@ test:
         set -eo pipefail
         
         # Configuration
-        EXPECTED_VERSION="${EXPECTED_VERSION}"
+        EXPECTED_VERSION="${{package.version}}"
         SERVER_PORT=9696
         STARTUP_TIMEOUT=60
-    
+
         echo "Starting server (expecting version: ${EXPECTED_VERSION})..."
         Prowlarr --nobrowser --data=/config >/tmp/server.log 2>&1 &
     
