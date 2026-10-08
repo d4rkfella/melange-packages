@@ -223,6 +223,6 @@ jobs:
           env:
             GH_TOKEN: ${{ steps.app-token.outputs.token }}
           run: |
-            gh workflow run terraform-ci.yml \
+            gh workflow run terraform-ci.yaml \
               --repo d4rkfella/containers \
               --ref main
