@@ -1,7 +1,7 @@
 package:
   name: seerr
   version: "3.5.0"
-  epoch: 0
+  epoch: 1
   description: Open-source media request and discovery manager for Jellyfin, Plex, and Emby.
   copyright:
     - license: MIT
@@ -11,6 +11,8 @@ package:
 environment:
   environment:
     REPRODUCIBLE: false
+    NEXT_TELEMETRY_DISABLED: 1
+    CYPRESS_INSTALL_BINARY: 0
   contents:
     packages:
       - wolfi-baselayout
@@ -27,8 +29,6 @@ pipeline:
   - name: Build
     working-directory: /home/build/seerr
     runs: |
-      export NEXT_TELEMETRY_DISABLED=1
-      export CYPRESS_INSTALL_BINARY=0
       export COMMIT_TAG=$(git rev-parse HEAD)
       pnpm install --frozen-lockfile
       pnpm build
@@ -63,13 +63,44 @@ test:
         - bash
         - jq
   pipeline:
-    - name: Run test script
-      runs: |
-        EXPECTED_VERSION="${{package.version}}" ./test.sh
     - name: Check for missing dependancies
       uses: test/tw/ldd-check
       with:
         packages: ${{package.name}}
+    
+    - name: Start seerr server and verify version from /api/v1/status response
+      working-directory: /usr/lib/${{package.name}}
+      runs: |
+        set -eo pipefail
+
+        # Configuration
+        EXPECTED_VERSION="${{package.version}}"
+        SERVER_PORT=5055
+        STARTUP_TIMEOUT=60
+
+        export NODE_ENV=production
+    
+        echo "Starting server (expecting version: ${EXPECTED_VERSION})..."
+        node dist/index.js >/tmp/server.log 2>&1 &
+    
+        echo "Waiting for server readiness (max ${STARTUP_TIMEOUT}s)..."
+        timeout $STARTUP_TIMEOUT bash -c "
+            while ! curl -sSf http://localhost:$SERVER_PORT >/dev/null 2>&1; do
+                sleep 1
+            done
+        " || {
+            echo "❌ Server failed to start within ${STARTUP_TIMEOUT}s" >&2
+            echo "=== Server logs ===" >&2
+            cat /tmp/server.log >&2
+            exit 1
+        }
+    
+        version=$(curl -sSf http://localhost:$SERVER_PORT/api/v1/status | jq -r '.version')
+        [[ "$version" == "$EXPECTED_VERSION" ]] || {
+            echo "❌ Version mismatch (expected ${EXPECTED_VERSION}, got ${version})" >&2
+            exit 1
+        }
+        echo "✅ Version check passed (${version})"
 update:
   enabled: true
   github:
