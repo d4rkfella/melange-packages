@@ -19,6 +19,7 @@ environment:
       - bash
       - curl
       - icu
+      - libssl3
 pipeline:
   - uses: git-checkout
     with:
