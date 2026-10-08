@@ -90,6 +90,7 @@ test:
     environment:
       PGADMIN_SETUP_EMAIL: "pgadmin4@localhost"
       PGADMIN_SETUP_PASSWORD: "pgadmin4"
+      PYTHONPATH: /usr/lib/pgadmin4
   pipeline:
     - name: Check for missing dependancies
       uses: test/tw/ldd-check
@@ -106,7 +107,7 @@ test:
         export PGADMIN_LISTEN_PORT=$SERVER_PORT
 
         echo "Starting pgAdmin server..."
-        /usr/lib/pgadmin4/venv/bin/gunicorn \
+        /usr/lib/pgadmin4/venv/bin/python3 -m gunicorn \
           -c /usr/lib/pgadmin4/gunicorn_config.py \
           run_pgadmin:app \
           >/tmp/pgadmin4-server.log 2>&1 &
