@@ -88,8 +88,7 @@ update:
 test:
   environment:
     environment:
-      PGADMIN_ALLOW_SPECIAL_EMAIL_DOMAINS: "['localhost']"
-      PGADMIN_SETUP_EMAIL: "pgadmin4@localhost"
+      PGADMIN_SETUP_EMAIL: "pgadmin4@example.com"
       PGADMIN_SETUP_PASSWORD: "pgadmin4"
       PYTHONPATH: /usr/lib/pgadmin4
   pipeline:
