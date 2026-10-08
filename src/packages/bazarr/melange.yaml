@@ -78,10 +78,10 @@ test:
         packages: ${{package.name}}
     
     - name: Start bazarr server and verify version from /api/system/status response
+      working-directory: /usr/lib/${{package.name}}
       runs: |
         set -eo pipefail
 
-        TARGET_DIR="/usr/lib/bazarr"
         EXPECTED_VERSION="${{vars.mangled-package-version}}"
         SERVER_PORT=6767
         STARTUP_TIMEOUT=20
@@ -103,7 +103,7 @@ test:
         API_KEY=$(yq -r '.auth.apikey' app/data/config/config.yaml)
         version=$(curl -sSf http://localhost:$SERVER_PORT/api/system/status?apikey=$API_KEY | jq -r '.data.bazarr_version')
         [[ "$version" == "$EXPECTED_VERSION" ]] || {
-            echo "❌ Version mismatch: expected ${EXPECTED_VERSION}, got ${version}" >&2
+            echo "❌ Version mismatch (expected ${EXPECTED_VERSION}, got ${version})" >&2
             exit 1
         }
         echo "✅ Version check passed (${version})"
