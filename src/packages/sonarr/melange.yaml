@@ -1,7 +1,7 @@
 package:
   name: sonarr
   version: "4.0.20.3014"
-  epoch: 0
+  epoch: 1
   description: Sonarr is a PVR for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new episodes of your favorite shows and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
   copyright:
     - license: GPL-3.0-only
@@ -108,9 +108,38 @@ test:
       uses: test/tw/ldd-check
       with:
         packages: ${{package.name}}
-    - name: Run test script
+  
+    - name: Start sonarr server and verify version from /api/v3/system/status response
+      working-directory: /usr/lib/${{package.name}}
       runs: |
-        EXPECTED_VERSION="${{package.version}}" ./test.sh
+        set -eo pipefail
+
+        # Configuration
+        EXPECTED_VERSION="${{package.version}}"
+        SERVER_PORT=7878
+        STARTUP_TIMEOUT=60
+
+        echo "Starting server (expecting version: ${EXPECTED_VERSION})..."
+        Sonarr --nobrowser --data=/config >/tmp/server.log 2>&1 &
+    
+        echo "Waiting for server readiness (max ${STARTUP_TIMEOUT}s)..."
+        timeout $STARTUP_TIMEOUT bash -c "
+            while ! curl -sSf http://localhost:$SERVER_PORT >/dev/null 2>&1; do
+                sleep 1
+            done
+        " || {
+            echo "❌ Server failed to start within ${STARTUP_TIMEOUT}s" >&2
+            echo "=== Server logs ===" >&2
+            cat /tmp/server.log >&2
+            exit 1
+        }
+        API_KEY=$(xmlstarlet sel -t -v "//ApiKey" /config/config.xml)
+        version=$(curl -sSf http://localhost:$SERVER_PORT/api/v3/system/status?apikey=$API_KEY | jq -r '.version')
+        [[ "$version" == "$EXPECTED_VERSION" ]] || {
+            echo "❌ Version mismatch (expected ${EXPECTED_VERSION}, got ${version})" >&2
+            exit 1
+        }
+        echo "✅ Version check passed (${version})"
 update:
   enabled: true
   enable-prerelease-tags: true
