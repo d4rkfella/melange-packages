@@ -1,7 +1,7 @@
 package:
   name: bazarr
   version: "1.6.3_beta6"
-  epoch: 0
+  epoch: 1
   description: Bazarr is a companion application to Sonarr and Radarr. It manages and downloads subtitles based on your requirements. You define your preferences by TV show or movie and Bazarr takes care of everything for you.
   copyright:
     - license: GPL-3.0
@@ -76,9 +76,37 @@ test:
       uses: test/tw/ldd-check
       with:
         packages: ${{package.name}}
-    - name: Run test script
+    
+    - name: Start bazarr server and verify version from /api/system/status response
       runs: |
-        EXPECTED_VERSION="${{vars.mangled-package-version}}" test/test.sh
+        set -eo pipefail
+
+        TARGET_DIR="/usr/lib/bazarr"
+        EXPECTED_VERSION="${{vars.mangled-package-version}}"
+        SERVER_PORT=6767
+        STARTUP_TIMEOUT=20
+
+        echo "Starting server (expecting version: ${EXPECTED_VERSION})..."
+        app/venv/bin/python app/bazarr.py --no-update >/tmp/server.log 2>&1 &
+    
+        echo "Waiting for server readiness (max ${STARTUP_TIMEOUT}s)..."
+        timeout $STARTUP_TIMEOUT bash -c "
+            while ! curl -sSf http://localhost:$SERVER_PORT >/dev/null 2>&1; do
+                sleep 1
+            done
+        " || {
+            echo "❌ Server failed to start within ${STARTUP_TIMEOUT}s" >&2
+            echo "=== Server logs ===" >&2
+            cat /tmp/server.log >&2
+            exit 1
+        }
+        API_KEY=$(yq -r '.auth.apikey' app/data/config/config.yaml)
+        version=$(curl -sSf http://localhost:$SERVER_PORT/api/system/status?apikey=$API_KEY | jq -r '.data.bazarr_version')
+        [[ "$version" == "$EXPECTED_VERSION" ]] || {
+            echo "❌ Version mismatch: expected ${EXPECTED_VERSION}, got ${version}" >&2
+            exit 1
+        }
+        echo "✅ Version check passed (${version})"
 update:
   enabled: true
   enable-prerelease-tags: true
