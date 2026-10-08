@@ -70,6 +70,8 @@ if not os.path.isfile("/var/lib/pgadmin/pgadmin4.db") and not external_db_exists
         "GLOBALLY_DELIVERABLE": globally_deliverable,
     }
 
+    print(f"email config is {email_config}", file=sys.stderr)
+
     if not validate_email(email, email_config):
         raise RuntimeError(f"'{email}' does not appear to be a valid email address.")
 
