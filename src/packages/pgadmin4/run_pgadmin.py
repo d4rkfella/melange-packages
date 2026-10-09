@@ -2,11 +2,10 @@ import ast
 import builtins
 import faulthandler
 import os
-import signal
 import sys
 
-faulthandler.register(signal.SIGUSR1, file=sys.stderr, all_threads=True)
-print(f"run_pgadmin imported in PID {os.getpid()}", file=sys.stderr, flush=True)
+faulthandler.enable()
+faulthandler.dump_traceback_later(30, repeat=True)
 
 UTILS_DIR = "/usr/lib/pgadmin4/pgadmin/utils"
 if UTILS_DIR not in sys.path:
