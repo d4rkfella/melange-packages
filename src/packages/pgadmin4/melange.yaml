@@ -1,7 +1,7 @@
 package:
   name: pgadmin4
   version: "9.18"
-  epoch: 4
+  epoch: 5
   description: pgAdmin 4 - PostgreSQL Tools for the Web
   copyright:
     - license: PostgreSQL
@@ -21,7 +21,7 @@ var-transforms:
     to: mangled-package-version
 environment:
   environment:
-    REPRODUCIBLE: false
+    REPRODUCIBLE: "false"
   contents:
     packages:
       - build-base
@@ -92,6 +92,8 @@ test:
         - curl
         - bash
     environment:
+      PGADMIN_LISTEN_ADDRESS: "127.0.0.1"
+      PGADMIN_LISTEN_PORT: "8080"
       PGADMIN_SETUP_EMAIL: "pgadmin4@example.com"
       PGADMIN_SETUP_PASSWORD: "pgadmin4"
       PYTHONPATH: /usr/lib/pgadmin4
@@ -107,74 +109,29 @@ test:
         STARTUP_TIMEOUT=120
         SERVER_LOG=/tmp/pgadmin4-server.log
 
-        # Avoid confusing tracebacks from a previous test run.
-        rm -f /tmp/pgadmin-trace-*.log
-
-        export PGADMIN_LISTEN_ADDRESS=127.0.0.1
-        export PGADMIN_LISTEN_PORT=$SERVER_PORT
-
-        echo "Starting pgAdmin server..."
+        echo "Starting server ..."
         /usr/lib/pgadmin4/venv/bin/python3 -m gunicorn \
           -c /usr/lib/pgadmin4/gunicorn_config.py \
           run_pgadmin:app \
           >"$SERVER_LOG" 2>&1 &
 
-        GUNICORN_PID=$!
-
-        echo "Gunicorn master PID: $GUNICORN_PID"
         echo "Waiting for server readiness (max ${STARTUP_TIMEOUT}s)..."
-
-        if ! timeout "$STARTUP_TIMEOUT" bash -c '
-          while ! curl --connect-timeout 2 --max-time 5 \
-            -sSf "http://127.0.0.1:$1/misc/ping" >/dev/null 2>&1; do
-            sleep 1
-          done
-        ' _ "$SERVER_PORT"; then
-            echo "❌ pgAdmin server failed to start within ${STARTUP_TIMEOUT}s" >&2
-
-            echo "=== Direct diagnostic request ===" >&2
-            curl -v --connect-timeout 3 --max-time 8 \
-              "http://127.0.0.1:$SERVER_PORT/misc/ping" >&2 || true
-
-            echo "=== Server logs ===" >&2
-            cat "$SERVER_LOG" >&2 || true
-
-            echo "=== Python traceback files ===" >&2
-            found_trace=0
-            for f in /tmp/pgadmin-trace-*.log; do
-              [ -f "$f" ] || continue
-              found_trace=1
-              echo "=== $f ===" >&2
-              cat "$f" >&2 || true
+        timeout "$STARTUP_TIMEOUT" bash -c "
+            while ! curl -sSf http://${PGADMIN_LISTEN_ADDRESS}:${PGADMIN_LISTEN_PORT}/misc/ping >/dev/null 2>&1; do
+                sleep 1
             done
-
-            if [ "$found_trace" -eq 0 ]; then
-              echo "No Python traceback files were created." >&2
-            fi
-
-            echo "=== Process status ===" >&2
-            ps -ef >&2 || true
-
+        " || {
+            echo "❌ Server failed to start within ${STARTUP_TIMEOUT}s" >&2
+            echo "=== Server logs ===" >&2
+            cat "$SERVER_LOG" >&2
             exit 1
-        fi
+        }
 
-        response=$(curl --connect-timeout 3 --max-time 8 \
-          -sSf "http://127.0.0.1:$SERVER_PORT/misc/ping")
-
-        if [[ "$response" != "PING" ]]; then
-          echo "❌ Unexpected /misc/ping response (expected PING, got ${response})" >&2
-
-          echo "=== Server logs ===" >&2
-          cat "$SERVER_LOG" >&2 || true
-
-          echo "=== Python traceback files ===" >&2
-          for f in /tmp/pgadmin-trace-*.log; do
-            [ -f "$f" ] || continue
-            echo "=== $f ===" >&2
-            cat "$f" >&2 || true
-          done
-
-          exit 1
-        fi
-
+        response=$(curl -sSf "http://${PGADMIN_LISTEN_ADDRESS}:${PGADMIN_LISTEN_PORT}/misc/ping")
+        [[ "$response" == "PING" ]] || {
+            echo "❌ Unexpected /misc/ping response (expected PING, got ${response})" >&2
+            echo "=== Server logs ===" >&2
+            cat "$SERVER_LOG" >&2
+            exit 1
+        }
         echo "✅ pgAdmin API check passed (/misc/ping -> ${response})"

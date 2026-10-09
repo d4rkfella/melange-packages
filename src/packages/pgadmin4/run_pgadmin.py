@@ -1,22 +1,7 @@
 import ast
 import builtins
-import faulthandler
 import os
 import sys
-
-TRACE_FILE = open(
-    f"/tmp/pgadmin-trace-{os.getpid()}.log",
-    "a",
-    buffering=1,
-)
-
-faulthandler.enable(file=TRACE_FILE, all_threads=True)
-faulthandler.dump_traceback_later(
-    30,
-    repeat=True,
-    file=TRACE_FILE,
-)
-print(f"run_pgadmin.py started; PID={os.getpid()}", file=sys.stderr, flush=True)
 
 UTILS_DIR = "/usr/lib/pgadmin4/pgadmin/utils"
 if UTILS_DIR not in sys.path:
@@ -91,15 +76,4 @@ if not os.path.isfile("/var/lib/pgadmin/pgadmin4.db") and not external_db_exists
         raise RuntimeError(f"'{email}' does not appear to be a valid email address.")
 
 
-print(
-    f"PID={os.getpid()}: starting 'from pgAdmin4 import app'",
-    file=sys.stderr,
-    flush=True,
-)
 from pgAdmin4 import app
-
-print(
-    f"PID={os.getpid()}: pgAdmin4 import completed",
-    file=sys.stderr,
-    flush=True,
-)
