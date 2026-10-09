@@ -121,11 +121,16 @@ test:
         echo "Waiting for server readiness (max ${STARTUP_TIMEOUT}s)..."
 
         if ! timeout "$STARTUP_TIMEOUT" bash -c '
-          while ! curl -sSf "http://localhost:$1/misc/ping" >/dev/null 2>&1; do
+          while ! curl --connect-timeout 2 --max-time 5 \
+            -sSf "http://127.0.0.1:$1/misc/ping" >/dev/null 2>&1; do
             sleep 1
           done
         ' _ "$SERVER_PORT"; then
             echo "❌ pgAdmin server failed to start within ${STARTUP_TIMEOUT}s" >&2
+
+            echo "=== Direct diagnostic request ===" >&2
+            curl -v --connect-timeout 3 --max-time 8 \
+              "http://127.0.0.1:$SERVER_PORT/misc/ping" >&2 || true
 
             echo "=== Server logs ===" >&2
             cat "$SERVER_LOG" >&2 || true
@@ -149,10 +154,12 @@ test:
             exit 1
         fi
 
-        response=$(curl -sSf "http://localhost:$SERVER_PORT/misc/ping")
+        response=$(curl --connect-timeout 3 --max-time 8 \
+          -sSf "http://127.0.0.1:$SERVER_PORT/misc/ping")
 
         if [[ "$response" != "PING" ]]; then
           echo "❌ Unexpected /misc/ping response (expected PING, got ${response})" >&2
+
           echo "=== Server logs ===" >&2
           cat "$SERVER_LOG" >&2 || true
 
@@ -167,4 +174,3 @@ test:
         fi
 
         echo "✅ pgAdmin API check passed (/misc/ping -> ${response})"
-
