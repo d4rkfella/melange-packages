@@ -87,6 +87,10 @@ update:
     - '^REL-[0-9]+_[0-9]+-.+$'
 test:
   environment:
+    contents:
+      packages:
+        - curl
+        - bash
     environment:
       PGADMIN_SETUP_EMAIL: "pgadmin4@example.com"
       PGADMIN_SETUP_PASSWORD: "pgadmin4"
