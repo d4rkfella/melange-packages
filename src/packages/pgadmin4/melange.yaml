@@ -102,6 +102,7 @@ test:
         # Configuration
         SERVER_PORT=8080
         STARTUP_TIMEOUT=120
+        SERVER_LOG=/tmp/pgadmin4-server.log
 
         export PGADMIN_LISTEN_ADDRESS=127.0.0.1
         export PGADMIN_LISTEN_PORT=$SERVER_PORT
@@ -110,25 +111,54 @@ test:
         /usr/lib/pgadmin4/venv/bin/python3 -m gunicorn \
           -c /usr/lib/pgadmin4/gunicorn_config.py \
           run_pgadmin:app \
-          >/tmp/pgadmin4-server.log 2>&1 &
+          >"$SERVER_LOG" 2>&1 &
 
+        GUNICORN_PID=$!
+
+        echo "Gunicorn master PID: $GUNICORN_PID"
         echo "Waiting for server readiness (max ${STARTUP_TIMEOUT}s)..."
-        timeout $STARTUP_TIMEOUT bash -c "
-            while ! curl -sSf http://localhost:$SERVER_PORT/misc/ping >/dev/null 2>&1; do
-                sleep 1
-            done
+
+        timeout "$STARTUP_TIMEOUT" bash -c "
+          while ! curl -sSf http://localhost:$SERVER_PORT/misc/ping >/dev/null 2>&1; do
+            sleep 1
+          done
         " || {
             echo "❌ pgAdmin server failed to start within ${STARTUP_TIMEOUT}s" >&2
+
+            echo "=== Sending SIGUSR1 to Gunicorn master ===" >&2
+            kill -USR1 "$GUNICORN_PID" 2>/dev/null || true
+
+            sleep 2
+
+            worker_pid=$(sed -n \
+              's/.*Booting worker with pid: \([0-9][0-9]*\).*/\1/p' \
+              "$SERVER_LOG" | tail -n 1)
+
+            if [ -n "$worker_pid" ]; then
+                echo "Gunicorn worker PID: $worker_pid" >&2
+                echo "=== Sending SIGUSR1 to Gunicorn worker ===" >&2
+                kill -USR1 "$worker_pid" 2>/dev/null || true
+                sleep 2
+            else
+                echo "No worker PID found in server logs." >&2
+            fi
+
             echo "=== Server logs ===" >&2
-            cat /tmp/pgadmin4-server.log >&2
+            cat "$SERVER_LOG" >&2
+
+            echo "=== Process status ===" >&2
+            ps -ef >&2 || true
+
             exit 1
         }
 
         response=$(curl -sSf http://localhost:$SERVER_PORT/misc/ping)
 
-        [[ "$response" == "PING" ]] || {
+        if [[ "$response" != "PING" ]]; then
             echo "❌ Unexpected /misc/ping response (expected PING, got ${response})" >&2
+            echo "=== Server logs ===" >&2
+            cat "$SERVER_LOG" >&2
             exit 1
-        }
+        fi
 
         echo "✅ pgAdmin API check passed (/misc/ping -> ${response})"
