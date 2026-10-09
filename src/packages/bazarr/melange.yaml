@@ -1,7 +1,7 @@
 package:
   name: bazarr
-  version: "1.6.3_beta6"
-  epoch: 1
+  version: "1.6.3_beta7"
+  epoch: 0
   description: Bazarr is a companion application to Sonarr and Radarr. It manages and downloads subtitles based on your requirements. You define your preferences by TV show or movie and Bazarr takes care of everything for you.
   copyright:
     - license: GPL-3.0
@@ -29,7 +29,7 @@ environment:
 pipeline:
   - uses: git-checkout
     with:
-      expected-commit: 271ef6fd729a3e1b65853aab0a9efa4fd70b15fc
+      expected-commit: 8619addb584498dbd34a063dd4dd66f30ea3c7f1
       repository: https://github.com/morpheus65535/bazarr
       tag: v${{vars.mangled-package-version}}
   - uses: patch
@@ -76,7 +76,6 @@ test:
       uses: test/tw/ldd-check
       with:
         packages: ${{package.name}}
-    
     - name: Start bazarr server and verify version from /api/system/status response
       working-directory: /usr/lib/${{package.name}}
       runs: |
@@ -88,7 +87,7 @@ test:
 
         echo "Starting server (expecting version: ${EXPECTED_VERSION})..."
         app/venv/bin/python app/bazarr.py --no-update >/tmp/server.log 2>&1 &
-    
+
         echo "Waiting for server readiness (max ${STARTUP_TIMEOUT}s)..."
         timeout $STARTUP_TIMEOUT bash -c "
             while ! curl -sSf http://localhost:$SERVER_PORT >/dev/null 2>&1; do
