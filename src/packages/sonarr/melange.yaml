@@ -1,7 +1,7 @@
 package:
   name: sonarr
-  version: "4.0.20.3014"
-  epoch: 2
+  version: "5.0.0.2569"
+  epoch: 0
   description: Sonarr is a PVR for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new episodes of your favorite shows and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
   copyright:
     - license: GPL-3.0-only
@@ -25,7 +25,7 @@ environment:
 pipeline:
   - uses: git-checkout
     with:
-      expected-commit: cab419ade8ac7fcab5bf80394ee492abd35d5f5a
+      expected-commit: 57816c149d02f95543973fefb4780c4495f8121c
       repository: https://github.com/Sonarr/Sonarr
       tag: v${{package.version}}
   - name: Install dependancies
@@ -111,7 +111,6 @@ test:
       uses: test/tw/ldd-check
       with:
         packages: ${{package.name}}
-  
     - name: Start sonarr server and verify version from /api/v3/system/status response
       working-directory: /usr/lib/${{package.name}}
       runs: |
@@ -124,7 +123,7 @@ test:
 
         echo "Starting server (expecting version: ${EXPECTED_VERSION})..."
         Sonarr --nobrowser --data=/config >/tmp/server.log 2>&1 &
-    
+
         echo "Waiting for server readiness (max ${STARTUP_TIMEOUT}s)..."
         timeout $STARTUP_TIMEOUT bash -c "
             while ! curl -sSf http://localhost:$SERVER_PORT >/dev/null 2>&1; do
