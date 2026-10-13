@@ -81,11 +81,6 @@ pipeline:
       mv "$_output/UI" "$_artifacts"
       mv $_output/Sonarr.Update/$_framework/$_runtime/publish $_artifacts/Sonarr.Update
 
-      echo "Adding Sonarr.Mono to UpdatePackage"
-      cp $_artifacts/Sonarr.Mono.* $_artifacts/Sonarr.Update
-      cp $_artifacts/Mono.Posix.NETStandard.* $_artifacts/Sonarr.Update
-      cp $_artifacts/libMonoPosixHelper.* $_artifacts/Sonarr.Update
-
       find "$_artifacts" \( \
         -name "ServiceUninstall.*" -o \
         -name "ServiceInstall.*" -o \
