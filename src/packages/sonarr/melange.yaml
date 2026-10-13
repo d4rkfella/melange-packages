@@ -68,7 +68,7 @@ pipeline:
         -p:EmbedAllSources=false \
         -t:PublishAllRids
 
-      yarn build --env production
+      yarn build
 
       chmod +x "$_artifacts"/ffprobe
 
