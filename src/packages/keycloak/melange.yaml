@@ -1,6 +1,6 @@
 package:
   name: keycloak-darkfellanet
-  version: "26.8.0"
+  version: "26.8.1"
   epoch: 0
   description: Open Source Identity and Access Management For Modern Applications and Services
   copyright:
@@ -36,7 +36,7 @@ pipeline:
     with:
       repository: https://github.com/keycloak/keycloak
       tag: ${{package.version}}
-      expected-commit: 4246609cf2024c85016d3fb1254c3d2533367c31
+      expected-commit: 24ed1dadf3f246a555adb6d3d4a99e9b3003fb3b
   - runs: |
       gcc napi-static-assert.c -o /tmp/preload.so -fPIC -shared -ldl
   - runs: |
