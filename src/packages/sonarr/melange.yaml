@@ -19,7 +19,7 @@ environment:
   contents:
     packages:
       - wolfi-baselayout
-      - dotnet-10-sdk
+      - dotnet-sdk-10.0.4
       - nodejs-24
       - yarn
 pipeline:
