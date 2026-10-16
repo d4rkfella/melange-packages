@@ -19,19 +19,15 @@ environment:
   contents:
     packages:
       - wolfi-baselayout
-      - bash
-      - curl
-      - icu
+      - dotnet-10-sdk
+      - nodejs-24
+      - yarn
 pipeline:
   - uses: git-checkout
     with:
       expected-commit: 1c01b720a5049d8597a46862dd31321206aea979
       repository: https://github.com/Sonarr/Sonarr
       tag: v${{package.version}}
-  - name: Install dependancies
-    runs: |
-      curl -sSL https://get.volta.sh | bash
-      curl -sSL https://builds.dotnet.microsoft.com/dotnet/scripts/v1/dotnet-install.sh | bash -s -- --jsonfile global.json
   - name: Build
     runs: |
       if [[ "${{build.arch}}" == "aarch64" ]]; then
@@ -39,8 +35,6 @@ pipeline:
       elif [[ "${{build.arch}}" == "x86_64" ]]; then
         runtime_arch="x64"
       fi
-
-      PATH="$HOME/.volta/bin:$HOME/.dotnet:$PATH"
 
       export BROWSERSLIST_IGNORE_OLD_DATA=true
 
