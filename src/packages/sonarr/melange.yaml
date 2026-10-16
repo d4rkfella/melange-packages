@@ -7,11 +7,11 @@ package:
     - license: GPL-3.0-only
   dependencies:
     runtime:
-      - icu
+      - libicu78
       - sqlite-libs
-      - libssl4
       - zlib
-      - krb5-libs
+      - so:libssl.so.4
+      - so:libgssapi_krb5.so.2
 environment:
   environment:
     DOTNET_CLI_TELEMETRY_OPTOUT: 1
