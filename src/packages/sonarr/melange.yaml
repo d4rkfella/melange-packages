@@ -10,7 +10,7 @@ package:
       - libicu78
       - sqlite-libs
       - zlib
-      - so:libssl.so.4
+      - so:libssl.so.3
       - so:libgssapi_krb5.so.2
 environment:
   environment:
