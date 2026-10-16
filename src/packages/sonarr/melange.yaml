@@ -1,7 +1,7 @@
 package:
   name: sonarr
   version: "5.0.0.2608"
-  epoch: 0
+  epoch: 1
   description: Sonarr is a PVR for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new episodes of your favorite shows and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
   copyright:
     - license: GPL-3.0-only
@@ -9,7 +9,7 @@ package:
     runtime:
       - icu
       - sqlite-libs
-      - libssl3
+      - libssl4
       - zlib
       - krb5-libs
 environment:
@@ -18,12 +18,10 @@ environment:
     REPRODUCIBLE: false
   contents:
     packages:
-      - build-base
-      - ca-certificates-bundle
+      - wolfi-baselayout
       - bash
       - curl
       - icu
-      - libssl3
 pipeline:
   - uses: git-checkout
     with:
