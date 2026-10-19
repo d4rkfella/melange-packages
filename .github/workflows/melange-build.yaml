@@ -75,6 +75,7 @@ jobs:
     runs-on: ${{ matrix.arch == 'x86_64' && 'ubuntu-26.04' || 'ubuntu-26.04-arm' }}
     concurrency:
       group: tools-${{ matrix.arch }}-${{ needs.versions.outputs.key }}
+      queue: max
       cancel-in-progress: false
     steps:
       - name: Harden the runner (Audit all outbound calls)
