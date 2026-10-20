@@ -1,0 +1,69 @@
+package:
+  name: cloudflared
+  version: "2026.10.0"
+  epoch: 0
+  description: Cloudflare Tunnel client
+  copyright:
+    - license: Apache-2.0
+
+environment:
+  contents:
+    packages:
+      - busybox
+      - ca-certificates-bundle
+      - wolfi-baselayout
+
+pipeline:
+  - uses: git-checkout
+    with:
+      repository: https://github.com/cloudflare/cloudflared
+      tag: ${{package.version}}
+      expected-commit: 8e090e5bfa7a53e824fb2d7eb276f8ab08337b80
+
+  - uses: go/build
+    with:
+      packages: ./cmd/cloudflared
+      output: cloudflared
+      ldflags: -extldflags=-static -X "main.Version=${{package.version}}"
+
+update:
+  enabled: true
+  github:
+    identifier: cloudflare/cloudflared
+
+test:
+  environment:
+    contents:
+      packages:
+        - bash
+        - coreutils
+        - curl
+        - grep
+        - procps
+        - netcat-openbsd
+  pipeline:
+    - name: "Verify binary existence and permissions"
+      runs: |
+        test -x /usr/bin/cloudflared
+    - name: "Check version output"
+      runs: |
+        cloudflared --version
+    - name: "Verify help command"
+      runs: |
+        cloudflared --help
+        cloudflared tunnel --help
+    - name: "Test quick tunnel creation"
+      uses: test/daemon-check-output
+      with:
+        start: cloudflared tunnel --url localhost:8080/
+        timeout: 30
+        expected_output: |
+          Thank you for trying Cloudflare Tunnel
+          Your quick Tunnel has been created! Visit it at
+          https://.*trycloudflare.com
+        error_strings: |
+          panic:
+          FATAL
+          failed to create tunnel
+          certificate error
+          connection refused
