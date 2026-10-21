@@ -1,7 +1,7 @@
 package:
   name: seerr
-  version: "3.5.0"
-  epoch: 1
+  version: "3.5.1"
+  epoch: 0
   description: Open-source media request and discovery manager for Jellyfin, Plex, and Emby.
   copyright:
     - license: MIT
@@ -22,7 +22,7 @@ environment:
 pipeline:
   - uses: git-checkout
     with:
-      expected-commit: e2f24cb46079746936516c723b09820360f95113
+      expected-commit: 564bfb08b54caa374bddaf820abfd226e5e69151
       repository: https://github.com/seerr-team/seerr
       tag: v${{package.version}}
       destination: seerr
@@ -67,7 +67,6 @@ test:
       uses: test/tw/ldd-check
       with:
         packages: ${{package.name}}
-    
     - name: Start seerr server and verify version from /api/v1/status response
       working-directory: /usr/lib/${{package.name}}
       runs: |
@@ -79,10 +78,10 @@ test:
         STARTUP_TIMEOUT=60
 
         export NODE_ENV=production
-    
+
         echo "Starting server (expecting version: ${EXPECTED_VERSION})..."
         node dist/index.js >/tmp/server.log 2>&1 &
-    
+
         echo "Waiting for server readiness (max ${STARTUP_TIMEOUT}s)..."
         timeout $STARTUP_TIMEOUT bash -c "
             while ! curl -sSf http://localhost:$SERVER_PORT >/dev/null 2>&1; do
@@ -94,7 +93,7 @@ test:
             cat /tmp/server.log >&2
             exit 1
         }
-    
+
         version=$(curl -sSf http://localhost:$SERVER_PORT/api/v1/status | jq -r '.version')
         [[ "$version" == "$EXPECTED_VERSION" ]] || {
             echo "❌ Version mismatch (expected ${EXPECTED_VERSION}, got ${version})" >&2
