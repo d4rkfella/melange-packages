@@ -41,13 +41,17 @@ pipeline:
       gcc napi-static-assert.c -o /tmp/preload.so -fPIC -shared -ldl
   - runs: |
       export LD_PRELOAD=/tmp/preload.so
+      export NODE_OPTIONS="--trace-uncaught --trace-warnings --trace-deprecation"
+
       ./mvnw -B -e -X -Dstyle.color=never clean install \
         -DskipTests \
         -Dmaven.test.skip=true \
         -DskipITs \
         -DskipProtoLock=true \
         -Pdistribution
+
       unset LD_PRELOAD
+      unset NODE_OPTIONS
 
       mkdir -p ${{targets.destdir}}/usr/share/java
       unzip -d ${{targets.destdir}}/usr/share/java quarkus/dist/target/keycloak-*.zip
