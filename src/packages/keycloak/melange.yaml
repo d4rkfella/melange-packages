@@ -19,13 +19,12 @@ environment:
       - bash
       - build-base
       - gcc-13-default
-      - nodejs
+      - nodejs-24
       - openjdk-${{vars.java-version}}-default-jdk
       - npm
       - pnpm
       - unzip
       - wolfi-base
-      - maven
       - node-gyp
   environment:
     LANG: en_US.UTF-8
