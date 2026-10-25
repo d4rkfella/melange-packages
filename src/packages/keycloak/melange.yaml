@@ -27,7 +27,6 @@ environment:
       - wolfi-base
       - maven
       - node-gyp
-      - icu-libs
   environment:
     LANG: en_US.UTF-8
     JAVA_HOME: /usr/lib/jvm/java-${{vars.java-version}}-openjdk
@@ -42,7 +41,12 @@ pipeline:
       gcc napi-static-assert.c -o /tmp/preload.so -fPIC -shared -ldl
   - runs: |
       export LD_PRELOAD=/tmp/preload.so
-      ./mvnw clean install -DskipTests -Dmaven.test.skip=true -DskipITs -DskipProtoLock=true -Pdistribution
+      ./mvnw -B -e -X -Dstyle.color=never clean install \
+        -DskipTests \
+        -Dmaven.test.skip=true \
+        -DskipITs \
+        -DskipProtoLock=true \
+        -Pdistribution
       unset LD_PRELOAD
 
       mkdir -p ${{targets.destdir}}/usr/share/java
