@@ -1,6 +1,6 @@
 package:
   name: cloudflared
-  version: "2026.10.3"
+  version: "2026.10.4"
   epoch: 0
   description: Cloudflare Tunnel client
   copyright:
@@ -16,7 +16,7 @@ pipeline:
     with:
       repository: https://github.com/cloudflare/cloudflared
       tag: ${{package.version}}
-      expected-commit: de6376c5af4a67cbc65258682e5a01781827643d
+      expected-commit: dc3b264da64a801bc3a8d5301a6db21401910ad5
   - uses: go/build
     with:
       packages: ./cmd/cloudflared
