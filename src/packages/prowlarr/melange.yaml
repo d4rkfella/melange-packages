@@ -1,7 +1,7 @@
 package:
   name: prowlarr
-  version: "2.6.5.5623"
-  epoch: 1
+  version: "2.6.6.5717"
+  epoch: 0
   description: Prowlarr is an indexer manager/proxy built on the popular *arr .net/reactjs base stack to integrate with your various PVR apps. Prowlarr supports management of both Torrent Trackers and Usenet Indexers. It integrates seamlessly with Lidarr, Mylar3, Radarr, Readarr, and Sonarr offering complete management of your indexers with no per app Indexer setup required (we do it all).
   copyright:
     - license: GPL-3.0-only
@@ -25,7 +25,7 @@ environment:
 pipeline:
   - uses: git-checkout
     with:
-      expected-commit: 12c327808314a7cae1b7301935ee10cabc19609f
+      expected-commit: 71c5435cf81b957c748080433ba3e4e4057cd779
       repository: https://github.com/Prowlarr/Prowlarr
       tag: v${{package.version}}
   - name: Install dependancies
@@ -113,11 +113,10 @@ test:
       uses: test/tw/ldd-check
       with:
         packages: ${{package.name}}
-    
     - name: Start prowlarr server and verify version from /api/v1/system/status response
       runs: |
         set -eo pipefail
-        
+
         # Configuration
         EXPECTED_VERSION="${{package.version}}"
         SERVER_PORT=9696
@@ -125,7 +124,7 @@ test:
 
         echo "Starting server (expecting version: ${EXPECTED_VERSION})..."
         Prowlarr --nobrowser --data=/config >/tmp/server.log 2>&1 &
-    
+
         echo "Waiting for server readiness (max ${STARTUP_TIMEOUT}s)..."
         timeout $STARTUP_TIMEOUT bash -c "
             while ! curl -sSf http://localhost:$SERVER_PORT >/dev/null 2>&1; do
