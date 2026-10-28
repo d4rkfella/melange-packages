@@ -1,7 +1,7 @@
 package:
   name: unrar
-  version: "7.3.1"
-  epoch: 3
+  version: "7.3.2"
+  epoch: 0
   description: UnRAR - free utility for RAR archives
 environment:
   contents:
@@ -12,7 +12,7 @@ pipeline:
   - uses: fetch
     with:
       uri: https://www.rarlab.com/rar/unrarsrc-${{package.version}}.tar.gz
-      expected-sha256: 634900842a3737d9cc15bbcc71d4c74cc713437e0bca296a573424fe5f2660ab
+      expected-sha256: f61a1160d6e2ebbda2ad353c8e82f62ab4312f97fde23c6c2c982d25e0014f99
   - uses: autoconf/make
   - runs: |
       mkdir -p ${{targets.destdir}}/usr/bin
