@@ -1,37 +1,32 @@
 package:
   name: prowlarr
-  version: "2.7.0.5723"
+  version: "3.0.0.5737"
   epoch: 0
   description: Prowlarr is an indexer manager/proxy built on the popular *arr .net/reactjs base stack to integrate with your various PVR apps. Prowlarr supports management of both Torrent Trackers and Usenet Indexers. It integrates seamlessly with Lidarr, Mylar3, Radarr, Readarr, and Sonarr offering complete management of your indexers with no per app Indexer setup required (we do it all).
   copyright:
     - license: GPL-3.0-only
   dependencies:
     runtime:
-      - icu
+      - libicu78
       - sqlite-libs
-      - libssl3
       - zlib
+      - so:libssl.so.3
+      - so:libgssapi_krb5.so.2
 environment:
   environment:
     DOTNET_CLI_TELEMETRY_OPTOUT: 1
   contents:
     packages:
-      - build-base
-      - ca-certificates-bundle
-      - bash
-      - curl
-      - icu
-      - libssl3
+      - wolfi-baselayout
+      - dotnet-sdk-10.0.4
+      - nodejs-24
+      - yarn
 pipeline:
   - uses: git-checkout
     with:
-      expected-commit: 0dc20d8495bad9951c3fafe53f32b6e1c70fcf3b
+      expected-commit: b8d1e7753ec1178d56a8d4735479357d259de335
       repository: https://github.com/Prowlarr/Prowlarr
       tag: v${{package.version}}
-  - name: Install dependancies
-    runs: |
-      curl -sSL https://get.volta.sh | bash
-      curl -sSL https://builds.dotnet.microsoft.com/dotnet/scripts/v1/dotnet-install.sh | bash -s -- --jsonfile global.json
   - name: Build
     runs: |
       if [[ "${{build.arch}}" == "aarch64" ]]; then
@@ -40,12 +35,7 @@ pipeline:
         runtime_arch="x64"
       fi
 
-      PATH="$HOME/.volta/bin:$HOME/.dotnet:$PATH"
-
       export BROWSERSLIST_IGNORE_OLD_DATA=true
-
-      volta install node@20
-      volta install yarn@1.22
 
       yarn install --frozen-lockfile --network-timeout 120000
 
@@ -59,10 +49,10 @@ pipeline:
       ulimit -n 4096
 
       dotnet msbuild -restore src/Prowlarr.sln \
-        -p:SelfContained=True \
         -p:Configuration=Release \
         -p:Platform=Posix \
         -p:RuntimeIdentifiers="$_runtime" \
+        -p:SelfContained=true \
         -p:AssemblyConfiguration="master" \
         -p:AssemblyVersion="${{package.version}}" \
         -p:DebugSymbols=false \
@@ -81,23 +71,23 @@ pipeline:
 
       printf "UpdateMethod=docker\nBranch=%s\nPackageVersion=%s\nPackageAuthor=[d4rkfella](https://github.com/d4rkfella)\n" "develop" "${{package.version}}" > "$_destdir/package_info"
 
-      cp -r "$_output/UI" "$_artifacts"
-      cp -r $_output/Prowlarr.Update/$_framework/$_runtime/publish $_artifacts/Prowlarr.Update
+      mv "$_output/UI" "$_artifacts"
+      mv $_output/Prowlarr.Update/$_framework/$_runtime/publish $_artifacts/Prowlarr.Update
 
       echo "Adding Prowlarr.Mono to UpdatePackage"
       cp $_artifacts/Prowlarr.Mono.* $_artifacts/Prowlarr.Update
-      cp $_artifacts/Mono.Posix.NETStandard.* $_artifacts/Prowlarr.Update
-      cp $_artifacts/libMonoPosixHelper.* $_artifacts/Prowlarr.Update
+      cp $_artifacts/Openur.Mono.Unix.* $_artifacts/Prowlarr.Update
+      cp $_artifacts/libMono.Unix.* $_artifacts/Prowlarr.Update
 
       find "$_artifacts" \( \
         -name "ServiceUninstall.*" -o \
         -name "ServiceInstall.*" -o \
         -name "Prowlarr.Windows.*" -o \
-        -name "libcoreclrtraceptprovider.so" -o \
-        -name "libmsalruntime.so" \
+        -name "libcoreclrtraceptprovider.so" \
       \) -delete
 
-      cp -af "$_artifacts" "$_destdir/bin"
+      mv "$_artifacts" "$_destdir/bin"
+      mv LICENSE "$_destdir/bin"
 
       ln -s /usr/lib/prowlarr/bin/Prowlarr "${{targets.destdir}}/usr/bin/Prowlarr"
 test:
