@@ -1,7 +1,7 @@
 package:
   name: pgadmin4
-  version: "9.18"
-  epoch: 5
+  version: "9.19"
+  epoch: 0
   description: pgAdmin 4 - PostgreSQL Tools for the Web
   copyright:
     - license: PostgreSQL
@@ -41,7 +41,7 @@ pipeline:
     with:
       repository: https://github.com/pgadmin-org/pgadmin4
       tag: REL-${{vars.mangled-package-version}}
-      expected-commit: "f09776c22d9dc7c1130f01d416ee43c5db5f11cb"
+      expected-commit: "062099ae5b927fc2bb6f1c1f198712e1f8bd04e6"
   - name: setup-venv
     runs: |
       mkdir -p ${{targets.destdir}}/usr/lib/pgadmin4
@@ -100,7 +100,6 @@ test:
   pipeline:
     - name: Check for missing dependancies
       uses: test/tw/ldd-check
-
     - name: Start pgAdmin server and verify /misc/ping API response
       runs: |
         set -eo pipefail
