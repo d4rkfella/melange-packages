@@ -1,6 +1,6 @@
 package:
   name: keycloak-darkfellanet
-  version: "26.8.1"
+  version: "26.8.2"
   epoch: 0
   description: Open Source Identity and Access Management For Modern Applications and Services
   copyright:
@@ -37,7 +37,7 @@ pipeline:
     with:
       repository: https://github.com/keycloak/keycloak
       tag: ${{package.version}}
-      expected-commit: 24ed1dadf3f246a555adb6d3d4a99e9b3003fb3b
+      expected-commit: e514445f9dcdabc5bdcf67cab56c1e49655de067
   - runs: |
       ./mvnw clean install -e -X \
         -DskipTests \
