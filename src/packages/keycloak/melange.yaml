@@ -43,6 +43,13 @@ pipeline:
   - runs: |
       export LD_PRELOAD=/tmp/preload.so
 
+      cd js
+      echo "=== Kiota dependency ==="
+      grep -n -A5 -B5 'kiota' libs/keycloak-admin-client/package.json
+      echo "=== Kiota package installation ==="
+      find node_modules -iname '*kiota*' 2>/dev/null | head -50
+      cd ..
+
       if ./mvnw clean install -DskipTests -Dmaven.test.skip=true -DskipITs -DskipProtoLock=true -Pdistribution; then
         BUILD_STATUS=0
       else
