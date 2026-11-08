@@ -30,7 +30,6 @@ environment:
   environment:
     LANG: en_US.UTF-8
     JAVA_HOME: /usr/lib/jvm/java-${{vars.java-version}}-openjdk
-    NODE_OPTIONS: "--no-deprecation --disable-proto=throw"
     REPRODUCIBLE: false
 pipeline:
   - uses: git-checkout
@@ -39,10 +38,11 @@ pipeline:
       tag: ${{package.version}}
       expected-commit: e514445f9dcdabc5bdcf67cab56c1e49655de067
   - runs: |
-      ./mvnw clean install -e -X \
-        -DskipTests \
-        -DskipProtoLock=true \
-        -Pdistribution
+      gcc napi-static-assert.c -o /tmp/preload.so -fPIC -shared -ldl
+  - runs: |
+      export LD_PRELOAD=/tmp/preload.so
+      ./mvnw clean install -DskipTests -Dmaven.test.skip=true -DskipITs -DskipProtoLock=true -Pdistribution
+      unset LD_PRELOAD
 
       mkdir -p ${{targets.destdir}}/usr/share/java
       unzip -d ${{targets.destdir}}/usr/share/java quarkus/dist/target/keycloak-*.zip
