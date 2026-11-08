@@ -40,19 +40,10 @@ pipeline:
       expected-commit: e514445f9dcdabc5bdcf67cab56c1e49655de067
   - runs: |
       gcc napi-static-assert.c -o /tmp/preload.so -fPIC -shared -ldl
-  - runs: |
+    - runs: |
       export LD_PRELOAD=/tmp/preload.so
 
-      cd js
-      echo "=== Kiota dependency ==="
-      grep -n -A5 -B5 'kiota' libs/keycloak-admin-client/package.json
-      echo "=== Kiota package installation ==="
-      find node_modules -iname '*kiota*' 2>/dev/null | head -50
-      cd ..
-
-      if ./mvnw clean install -DskipTests -Dmaven.test.skip=true -DskipITs -DskipProtoLock=true -Pdistribution; then
-        BUILD_STATUS=0
-      else
+      if ! ./mvnw clean install -DskipTests -Dmaven.test.skip=true -DskipITs -DskipProtoLock=true -Pdistribution; then
         BUILD_STATUS=$?
 
         echo "========== KEYCLOAK BUILD DIAGNOSTICS =========="
@@ -60,8 +51,8 @@ pipeline:
         cd js/libs/keycloak-admin-client
 
         echo "========== GENERATED FILES =========="
-        ls -la src/generated/
-        ls -l openapi.json
+        ls -la src/generated/ || true
+        ls -l openapi.json || true
 
         echo "========== KIOTA GENERATION =========="
         if [ -x ../../node_modules/.bin/kiota ]; then
@@ -72,22 +63,15 @@ pipeline:
             -n ApiSdk \
             -o ./src/generated \
             --clean-output
-          echo "Kiota exit code: $?"
         else
-          echo "Kiota executable not found at ../../node_modules/.bin/kiota"
+          echo "Kiota executable not found"
         fi
 
-        echo "========== DOC EXAMPLES TRACE =========="
-        TS_NODE_LOG_ERROR=true node --trace-uncaught \
-          --loader ts-node/esm \
-          scripts/generate-doc-examples.ts
-        echo "Doc examples exit code: $?"
-
         echo "========== END DIAGNOSTICS =========="
+        exit 1
       fi
 
       unset LD_PRELOAD
-      exit "$BUILD_STATUS"
 
       mkdir -p ${{targets.destdir}}/usr/share/java
       unzip -d ${{targets.destdir}}/usr/share/java quarkus/dist/target/keycloak-*.zip
