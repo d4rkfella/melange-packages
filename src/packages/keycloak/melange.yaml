@@ -42,8 +42,45 @@ pipeline:
       gcc napi-static-assert.c -o /tmp/preload.so -fPIC -shared -ldl
   - runs: |
       export LD_PRELOAD=/tmp/preload.so
-      ./mvnw clean install -DskipTests -Dmaven.test.skip=true -DskipITs -DskipProtoLock=true -Pdistribution
+
+      if ./mvnw clean install -DskipTests -Dmaven.test.skip=true -DskipITs -DskipProtoLock=true -Pdistribution; then
+        BUILD_STATUS=0
+      else
+        BUILD_STATUS=$?
+
+        echo "========== KEYCLOAK BUILD DIAGNOSTICS =========="
+
+        cd js/libs/keycloak-admin-client
+
+        echo "========== GENERATED FILES =========="
+        ls -la src/generated/
+        ls -l openapi.json
+
+        echo "========== KIOTA GENERATION =========="
+        if [ -x ../../node_modules/.bin/kiota ]; then
+          ../../node_modules/.bin/kiota generate \
+            -l typescript \
+            -d openapi.json \
+            -c AdminClient \
+            -n ApiSdk \
+            -o ./src/generated \
+            --clean-output
+          echo "Kiota exit code: $?"
+        else
+          echo "Kiota executable not found at ../../node_modules/.bin/kiota"
+        fi
+
+        echo "========== DOC EXAMPLES TRACE =========="
+        TS_NODE_LOG_ERROR=true node --trace-uncaught \
+          --loader ts-node/esm \
+          scripts/generate-doc-examples.ts
+        echo "Doc examples exit code: $?"
+
+        echo "========== END DIAGNOSTICS =========="
+      fi
+
       unset LD_PRELOAD
+      exit "$BUILD_STATUS"
 
       mkdir -p ${{targets.destdir}}/usr/share/java
       unzip -d ${{targets.destdir}}/usr/share/java quarkus/dist/target/keycloak-*.zip
