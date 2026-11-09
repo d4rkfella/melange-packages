@@ -40,20 +40,20 @@ pipeline:
       expected-commit: e514445f9dcdabc5bdcf67cab56c1e49655de067
   - runs: |
       gcc napi-static-assert.c -o /tmp/preload.so -fPIC -shared -ldl
-    - runs: |
+  - runs: |
       export LD_PRELOAD=/tmp/preload.so
-
+  
       if ! ./mvnw clean install -DskipTests -Dmaven.test.skip=true -DskipITs -DskipProtoLock=true -Pdistribution; then
         BUILD_STATUS=$?
-
+  
         echo "========== KEYCLOAK BUILD DIAGNOSTICS =========="
-
+  
         cd js/libs/keycloak-admin-client
-
+  
         echo "========== GENERATED FILES =========="
         ls -la src/generated/ || true
         ls -l openapi.json || true
-
+  
         echo "========== KIOTA GENERATION =========="
         if [ -x ../../node_modules/.bin/kiota ]; then
           ../../node_modules/.bin/kiota generate \
@@ -66,19 +66,19 @@ pipeline:
         else
           echo "Kiota executable not found"
         fi
-
+  
         echo "========== END DIAGNOSTICS =========="
         exit 1
       fi
-
+  
       unset LD_PRELOAD
-
+  
       mkdir -p ${{targets.destdir}}/usr/share/java
       unzip -d ${{targets.destdir}}/usr/share/java quarkus/dist/target/keycloak-*.zip
       mv ${{targets.destdir}}/usr/share/java/keycloak-* ${{targets.destdir}}/usr/share/java/keycloak
-
+  
       mkdir -p ${{targets.destdir}}/usr/share/java/keycloak/data
-
+  
       mkdir -p ${{targets.destdir}}/usr/bin
       for i in kc.sh kcadm.sh kcreg.sh; do
         ln -sf /usr/share/java/keycloak/bin/$i ${{targets.destdir}}/usr/bin/$i
