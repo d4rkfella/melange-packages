@@ -73,22 +73,62 @@ pipeline:
         echo "========== KIOTA GENERATOR =========="
         cd libs/keycloak-admin-client
 
-        if [ -x ../../node_modules/.bin/kiota ]; then
-          echo "Found workspace Kiota executable"
-          ../../node_modules/.bin/kiota --version || true
-        elif [ -x node_modules/.bin/kiota ]; then
+        if [ -x node_modules/.bin/kiota ]; then
           echo "Found package Kiota executable"
           node_modules/.bin/kiota --version || true
+        elif [ -x ../../node_modules/.bin/kiota ]; then
+          echo "Found workspace Kiota executable"
+          ../../node_modules/.bin/kiota --version || true
         else
           echo "Kiota executable is missing"
         fi
 
-        echo "========== GENERATED FILES =========="
+        echo "========== GENERATED FILES BEFORE TRACE =========="
         ls -lah src/generated/ || true
         ls -lah openapi.json || true
+
+        echo "========== KIOTA GENERATION TRACE =========="
+
+        export KIOTA_VERSION=v1.32.4
+        export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+
+        if [ -x node_modules/.bin/kiota ]; then
+          node_modules/.bin/kiota generate \
+            -l typescript \
+            -d openapi.json \
+            -c AdminClient \
+            -n ApiSdk \
+            -o ./src/generated \
+            --clean-output \
+            --log-level trace
+          KIOTA_STATUS=$?
+        elif [ -x ../../node_modules/.bin/kiota ]; then
+          ../../node_modules/.bin/kiota generate \
+            -l typescript \
+            -d openapi.json \
+            -c AdminClient \
+            -n ApiSdk \
+            -o ./src/generated \
+            --clean-output \
+            --log-level trace
+          KIOTA_STATUS=$?
+        else
+          echo "Cannot run Kiota: executable not found"
+          KIOTA_STATUS=127
+        fi
+
+        echo "Kiota generation exit code: ${KIOTA_STATUS}"
+
+        echo "========== GENERATED FILES AFTER TRACE =========="
+        find src/generated -maxdepth 3 -type f -print 2>/dev/null || true
+
+        echo "========== KIOTA LOG =========="
         cat src/generated/.kiota.log 2>/dev/null || true
 
-        echo "========== END DIAGNOSTICS =========="
+        echo "========== KIOTA DOWNLOADED BINARIES =========="
+        find .kiota -maxdepth 3 -type f -print 2>/dev/null || true
+
+        echo "========== END KEYCLOAK DIAGNOSTICS =========="
 
         unset LD_PRELOAD
         exit "$BUILD_STATUS"
