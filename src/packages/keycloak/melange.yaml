@@ -21,6 +21,7 @@ environment:
       - gcc-13-default
       - nodejs-24
       - openjdk-${{vars.java-version}}-default-jdk
+      - maven
       - npm
       - pnpm
       - unzip
