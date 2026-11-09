@@ -42,46 +42,77 @@ pipeline:
       gcc napi-static-assert.c -o /tmp/preload.so -fPIC -shared -ldl
   - runs: |
       export LD_PRELOAD=/tmp/preload.so
-  
-      if ! ./mvnw clean install -DskipTests -Dmaven.test.skip=true -DskipITs -DskipProtoLock=true -Pdistribution; then
+
+      echo "========== BUILDING KEYCLOAK =========="
+
+      if ./mvnw clean install \
+        -DskipTests \
+        -Dmaven.test.skip=true \
+        -DskipITs \
+        -DskipProtoLock=true \
+        -Pdistribution; then
+        BUILD_STATUS=0
+      else
         BUILD_STATUS=$?
-  
-        echo "========== KEYCLOAK BUILD DIAGNOSTICS =========="
-  
-        cd js/libs/keycloak-admin-client
-  
-        echo "========== GENERATED FILES =========="
-        ls -la src/generated/ || true
-        ls -l openapi.json || true
-  
-        echo "========== KIOTA GENERATION =========="
+
+        echo "========== KEYCLOAK BUILD FAILED =========="
+        echo "Maven exit code: ${BUILD_STATUS}"
+
+        echo "========== NODE AND PNPM =========="
+        cd js
+        node --version || true
+        pnpm --version || true
+
+        echo "========== KIOTA PACKAGE =========="
+        pnpm list @kiota-community/kiota-gen --depth 1 || true
+
+        echo "========== KIOTA EXECUTABLE LOCATIONS =========="
+        find node_modules libs/keycloak-admin-client/node_modules \
+          -iname '*kiota*' -print 2>/dev/null || true
+
+        echo "========== KIOTA GENERATOR =========="
+        cd libs/keycloak-admin-client
+
         if [ -x ../../node_modules/.bin/kiota ]; then
-          ../../node_modules/.bin/kiota generate \
-            -l typescript \
-            -d openapi.json \
-            -c AdminClient \
-            -n ApiSdk \
-            -o ./src/generated \
-            --clean-output
+          echo "Found workspace Kiota executable"
+          ../../node_modules/.bin/kiota --version || true
+        elif [ -x node_modules/.bin/kiota ]; then
+          echo "Found package Kiota executable"
+          node_modules/.bin/kiota --version || true
         else
-          echo "Kiota executable not found"
+          echo "Kiota executable is missing"
         fi
-  
+
+        echo "========== GENERATED FILES =========="
+        ls -lah src/generated/ || true
+        ls -lah openapi.json || true
+        cat src/generated/.kiota.log 2>/dev/null || true
+
         echo "========== END DIAGNOSTICS =========="
-        exit 1
+
+        unset LD_PRELOAD
+        exit "$BUILD_STATUS"
       fi
-  
+
       unset LD_PRELOAD
-  
+
+      echo "========== UNPACKING KEYCLOAK =========="
+
       mkdir -p ${{targets.destdir}}/usr/share/java
-      unzip -d ${{targets.destdir}}/usr/share/java quarkus/dist/target/keycloak-*.zip
-      mv ${{targets.destdir}}/usr/share/java/keycloak-* ${{targets.destdir}}/usr/share/java/keycloak
-  
+
+      unzip -d ${{targets.destdir}}/usr/share/java \
+        quarkus/dist/target/keycloak-*.zip
+
+      mv ${{targets.destdir}}/usr/share/java/keycloak-* \
+        ${{targets.destdir}}/usr/share/java/keycloak
+
       mkdir -p ${{targets.destdir}}/usr/share/java/keycloak/data
-  
+
       mkdir -p ${{targets.destdir}}/usr/bin
+
       for i in kc.sh kcadm.sh kcreg.sh; do
-        ln -sf /usr/share/java/keycloak/bin/$i ${{targets.destdir}}/usr/bin/$i
+        ln -sf /usr/share/java/keycloak/bin/$i \
+          ${{targets.destdir}}/usr/bin/$i
       done
   - uses: git-checkout
     with:
