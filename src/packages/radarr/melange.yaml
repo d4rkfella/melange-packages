@@ -16,6 +16,8 @@ environment:
   contents:
     packages:
       - wolfi-baselayout
+      - curl
+      - bash
       - nodejs-24
       - yarn
   environment:
