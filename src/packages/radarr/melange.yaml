@@ -16,7 +16,6 @@ environment:
   contents:
     packages:
       - wolfi-baselayout
-      - dotnet-10-sdk
       - nodejs-24
       - yarn
   environment:
@@ -28,6 +27,9 @@ pipeline:
       expected-commit: af772b051ac27a0615c7f8b7f78622b6dc183be0
       repository: https://github.com/Radarr/Radarr
       tag: v${{package.version}}
+  - name: Install dotnet
+    runs: |
+      curl -sSL https://builds.dotnet.microsoft.com/dotnet/scripts/v1/dotnet-install.sh | bash -s -- --jsonfile global.json
   - name: Build
     runs: |
       if [[ "${{build.arch}}" == "aarch64" ]]; then
@@ -35,6 +37,8 @@ pipeline:
       elif [[ "${{build.arch}}" == "x86_64" ]]; then
         runtime_arch="x64"
       fi
+
+      PATH="$HOME/.dotnet:$PATH"
 
       export BROWSERSLIST_IGNORE_OLD_DATA=true
 
