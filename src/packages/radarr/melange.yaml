@@ -1,6 +1,6 @@
 package:
   name: radarr
-  version: "7.0.3.10912"
+  version: "7.0.3.10918"
   epoch: 0
   description: Movie download automation for usenet and torrents.
   copyright:
