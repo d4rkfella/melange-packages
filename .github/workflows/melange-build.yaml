@@ -194,9 +194,9 @@ jobs:
           signing-key: ${{ secrets.MELANGE_PRIVATE_KEY }}
           maintainer: darkfella
           pipeline-dir: ${{ github.workspace }}/pipelines
-          repository-append: https://apk-registry.darkfella.space/os,https://packages.wolfi.dev/os
+          repository-append: https://apk-registry.darkfella.space/wolfi-os,https://packages.wolfi.dev/os
           keyring-append: https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
-          tests-repository-append: https://apk-registry.darkfella.space/os,https://packages.wolfi.dev/os
+          tests-repository-append: https://apk-registry.darkfella.space/wolfi-os,https://packages.wolfi.dev/os
           tests-keyring-append: https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
   
   trigger-terraform:
