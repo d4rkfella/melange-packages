@@ -1,6 +1,6 @@
 package:
   name: sonarr
-  version: "5.0.0.2941"
+  version: "5.0.0.2997"
   epoch: 0
   description: Sonarr is a PVR for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new episodes of your favorite shows and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
   copyright:
@@ -19,15 +19,19 @@ environment:
   contents:
     packages:
       - wolfi-baselayout
-      - dotnet-sdk-10.0.4
+      - curl
+      - bash
       - nodejs-24
       - yarn
 pipeline:
   - uses: git-checkout
     with:
-      expected-commit: c018578e4b79ee048575c02d7a8aa2b929e4b837
+      expected-commit: 51a2412af235197ce15d7d4a17c053a8e2c26609
       repository: https://github.com/Sonarr/Sonarr
       tag: v${{package.version}}
+  - name: Install dotnet
+    runs: |
+      curl -sSL https://builds.dotnet.microsoft.com/dotnet/scripts/v1/dotnet-install.sh | bash -s -- --jsonfile global.json
   - name: Build
     runs: |
       if [[ "${{build.arch}}" == "aarch64" ]]; then
@@ -35,6 +39,8 @@ pipeline:
       elif [[ "${{build.arch}}" == "x86_64" ]]; then
         runtime_arch="x64"
       fi
+
+      PATH="$HOME/.dotnet:$PATH"
 
       export BROWSERSLIST_IGNORE_OLD_DATA=true
 
