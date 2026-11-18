@@ -189,17 +189,17 @@ jobs:
         with:
           arch: ${{ matrix.arch }}
           oidc-provider-name: github-oidc
-          artifactory-url: https://packages.darkfellanetwork.com
+          artifactory-url: https://packages.darkfella.space
           artifactory-repository-path: wolfi-os/latest/main
           config: ${{ matrix.packages }}
           sign-package: true
           signing-key: ${{ secrets.MELANGE_PRIVATE_KEY }}
           maintainer: darkfella
           pipeline-dir: ${{ github.workspace }}/pipelines
-          repository-append: https://packages.darkfellanetwork.com/artifactory/wolfi-os/latest/main,https://packages.wolfi.dev/os
-          keyring-append: https://packages.darkfellanetwork.com/artifactory/wolfi-os/melange.rsa.pub,https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
-          tests-repository-append: https://packages.darkfellanetwork.com/artifactory/wolfi-os/latest/main,https://packages.wolfi.dev/os
-          tests-keyring-append: https://packages.darkfellanetwork.com/artifactory/wolfi-os/melange.rsa.pub,https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
+          repository-append: https://packages.darkfella.space/artifactory/wolfi-os/latest/main,https://packages.wolfi.dev/os
+          keyring-append: https://packages.darkfella.space/artifactory/wolfi-os/melange.rsa.pub,https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
+          tests-repository-append: https://packages.darkfella.space/artifactory/wolfi-os/latest/main,https://packages.wolfi.dev/os
+          tests-keyring-append: https://packages.darkfella.space/artifactory/wolfi-os/melange.rsa.pub,https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
 
   trigger-terraform:
       name: Trigger Terraform CI
